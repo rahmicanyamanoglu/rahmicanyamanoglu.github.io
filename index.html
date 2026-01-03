@@ -62,9 +62,22 @@
 
         .header-content {
             display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 60px;
+            grid-template-columns: auto 1fr auto;
+            gap: 40px;
             align-items: start;
+        }
+
+        .profile-photo {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--border);
+            transition: border-color 0.3s;
+        }
+
+        .profile-photo:hover {
+            border-color: var(--accent);
         }
 
         .name {
@@ -395,16 +408,24 @@
             .header-content {
                 grid-template-columns: 1fr;
                 gap: 32px;
+                text-align: center;
+            }
+
+            .profile-photo {
+                width: 150px;
+                height: 150px;
+                margin: 0 auto;
             }
 
             nav {
                 flex-direction: row;
                 flex-wrap: wrap;
                 gap: 16px;
+                justify-content: center;
             }
 
             nav a {
-                text-align: left;
+                text-align: center;
             }
 
             .timeline-item {
@@ -444,6 +465,7 @@
     <div class="container">
         <header>
             <div class="header-content">
+                <img src="images/profile.jpg" alt="R. Can Yamanoğlu" class="profile-photo">
                 <div>
                     <h1 class="name">Rahmi <span>Can</span> Yamanoğlu</h1>
                     <p class="title">PhD Candidate in Economic Geography & Regional Science</p>
