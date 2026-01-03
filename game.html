@@ -44,20 +44,53 @@
             height: 100%;
             position: relative;
         }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wine Runner – Inclusive Innovation</title>
+  <style>
+    /* Reset & Base */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at top, #2a0309, #050000 65%, #020103);
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      color: #f0f4ff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden; /* Prevents scrollbars inside the iframe */
+    }
 
-        #ui-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 20px;
-            box-sizing: border-box;
-        }
+    /* Responsive Game Wrapper */
+    #game-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 1500px; /* Max width for large screens */
+      aspect-ratio: 15/6.5; /* Keeps the game shape correct */
+      background: linear-gradient(180deg,#1a0206,#050002);
+      border-radius: 24px;
+      box-shadow: 0 30px 70px rgba(240,10,10,0.25);
+      border: 1px solid rgba(255,90,90,0.2);
+      overflow: hidden;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* UI Elements */
+    #hud {
+      position: absolute;
+      top: 2%;
+      left: 2%;
+      font-size: clamp(12px, 1.5vw, 16px); /* Responsive font size */
+      text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+      pointer-events: none;
+    }
 
         .hud-top {
             display: flex;
@@ -65,16 +98,16 @@
             flex-wrap: wrap;
         }
 
-        .stat-box {
-            background: rgba(0, 255, 255, 0.1);
-            border: 2px solid #00ffcc;
-            padding: 10px 20px;
-            color: #00ffcc;
-            font-family: 'Rajdhani', sans-serif;
-            font-weight: bold;
-            text-transform: uppercase;
-            box-shadow: 0 0 15px #00ffcc;
-        }
+    /* Overlays */
+    #dialog-overlay, #start-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(8,0,12,0.85);
+      z-index: 10;
+    }
 
         .screen {
             position: absolute;
@@ -98,86 +131,279 @@
             visibility: hidden;
         }
 
-        .game-title {
-            font-size: 60px;
-            color: #fff;
-            font-family: 'Rajdhani', sans-serif;
-            text-shadow: 0 0 20px #ff0055;
-            margin: 0;
-            font-style: italic;
-        }
+    button {
+      margin: 10px;
+      padding: 12px 18px;
+      border-radius: 10px;
+      border: none;
+      background: #ffd95b;
+      color: #2b1420;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: transform 0.1s, background 0.2s;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      background: #ffea9e;
+    }
+  </style>
+</head>
+<body>
 
-        .game-button {
-            margin-top: 40px;
-            padding: 20px 60px;
-            font-size: 24px;
-            font-family: 'Rajdhani', sans-serif;
-            font-weight: 900;
-            color: #000;
-            background: #ff0055;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 0 30px #ff0055;
-            transition: transform 0.2s;
-        }
+  <div id="game-wrapper">
+    <canvas id="game" width="1500" height="650"></canvas>
+    
+    <div id="hud"></div>
+    <div id="message"></div>
 
-        .game-button:hover {
-            transform: scale(1.1);
-            background: #fff;
-        }
+    <div id="start-overlay">
+      <div class="start-box">
+        <h2>Wine Runner</h2>
+        <p>Use <strong>Arrow Keys</strong> to Move & Jump</p>
+        <p>Press <strong>F</strong> to throw Trademarks</p>
+        <button id="start-btn">Click to Start Game</button>
+      </div>
+    </div>
 
-        .game-description {
-            color: var(--muted);
-            font-size: 1.05rem;
-            max-width: 750px;
-            margin-bottom: 30px;
-        }
+    <div id="dialog-overlay">
+      <div class="dialog-box">
+        <p id="dialog-text">Patent Baron: ...</p>
+        <div class="dialog-options">
+          <button data-choice="patent">Patents measure innovation</button>
+          <button data-choice="trademark">Trademarks defend terroir</button>
+        </div>
+        <button id="dialog-continue">Continue</button>
+      </div>
+    </div>
+  </div>
 
-        .game-controls {
-            background: rgba(139, 69, 19, 0.1);
-            border: 1px solid var(--border);
-            padding: 20px;
-            margin-top: 30px;
-            max-width: 750px;
-        }
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    const hud = document.getElementById("hud");
+    const message = document.getElementById("message");
+    const dialogOverlay = document.getElementById("dialog-overlay");
+    const dialogText = document.getElementById("dialog-text");
+    const dialogButtons = Array.from(document.querySelectorAll("#dialog-overlay button[data-choice]"));
+    const dialogContinue = document.getElementById("dialog-continue");
+    
+    // Focus handling
+    const startOverlay = document.getElementById("start-overlay");
+    const startBtn = document.getElementById("start-btn");
+    let gameHasFocus = false;
 
-        .game-controls h3 {
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 0.08em;
-            margin-bottom: 15px;
-        }
+    startBtn.addEventListener("click", () => {
+      startOverlay.style.display = "none";
+      gameHasFocus = true;
+      resetGame();
+      // Ensure audio context is allowed
+      if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        const tempCtx = new AC();
+        tempCtx.resume().then(() => tempCtx.close());
+      }
+    });
 
-        .game-controls ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
+    if (!CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function (x, y, width, height, radius) {
+        const r = typeof radius === "number" ? radius : 8;
+        this.beginPath();
+        this.moveTo(x + r, y);
+        this.arcTo(x + width, y, x + width, y + height, r);
+        this.arcTo(x + width, y + height, x, y + height, r);
+        this.arcTo(x, y + height, x, y, r);
+        this.arcTo(x, y, x + width, y, r);
+        this.arcTo(x, y, x + width, y, r);
+        return this;
+      };
+    }
 
-        .game-controls li {
-            padding: 5px 0;
-            color: var(--muted);
-        }
+    const WIDTH = 1500; // Internal resolution
+    const HEIGHT = 650;
+    const GROUND = HEIGHT - 80;
+    const GRAVITY = 3000;
+    const FRICTION = 0.64;
+    const PLAYER_SPEED = 660;
+    const JUMP_FORCE = 660;
+    const DASH_FORCE = 780;
+    const DASH_COOLDOWN = 1.2;
+    const TRADEMARK_COOLDOWN = 0.35;
+    const TRADEMARK_SPEED = 820;
+    const GOAL_FRIEND_BUFFER = 220;
+    
+    // Define Environments
+    const ENVIRONMENTS = [
+      {
+        id: "high",
+        name: "High-Trust Environment",
+        description: "Collective action flows easily; free riders hesitate.",
+        trustMultiplier: 1.25,
+        enemySpeedMultiplier: 0.8,
+        grapeTheft: false,
+        trademarkDelta: 3,
+        tmStatus: "Trademarks increasing",
+        goalLabel: "GI",
+        colors: { skyTop: "#092550", skyMid: "#0b1c3d", skyBottom: "#050a16", hill: "#0e264a", soil: "#091324", vineTint: [90, 150, 200] },
+        introMessage: "High-trust environment: reach the glowing door to file the GI!",
+        transitionMessage: "GI charter sealed! But CTMs are next—brace for low trust.",
+      },
+      {
+        id: "low",
+        name: "Low-Trust Environment",
+        description: "Fragmented governance; free riders dash to steal grapes.",
+        trustMultiplier: 0.95,
+        enemySpeedMultiplier: 1.2,
+        grapeTheft: true,
+        trademarkDelta: -4,
+        tmStatus: "Trademarks decreasing",
+        goalLabel: "CT",
+        colors: { skyTop: "#41030c", skyMid: "#240006", skyBottom: "#0b0002", hill: "#300109", soil: "#160002", vineTint: [210, 50, 50] },
+        introMessage: "Low-trust crisis! Free riders and weakened trademarks.",
+        extraCollectibles: [
+          { x: 200, y: null, spec: { type: "grape", color: "#d4afff", label: "Community Harvest" } },
+          { x: 500, y: null, spec: { type: "grape", color: "#d4afff", label: "Shared Plot" } },
+          { x: 900, y: null, spec: { type: "gi", color: "#91e0c0", label: "Emergency Charter" } },
+        ],
+        extraEnemies: [{ x: 620, range: 130, speed: 170 }, { x: 1180, range: 120, speed: 170 }],
+      },
+      {
+        id: "boss",
+        name: "Patent Citadel",
+        description: "Face the monopolist who hoards IP and mocks trademarks.",
+        trustMultiplier: 1,
+        enemySpeedMultiplier: 1,
+        grapeTheft: false,
+        trademarkDelta: 6,
+        tmStatus: "Final showdown",
+        goalLabel: "IP",
+        colors: { skyTop: "#1d030f", skyMid: "#120006", skyBottom: "#050001", hill: "#2a0208", soil: "#160003", vineTint: [240, 120, 150] },
+        introMessage: "The Patent Baron blocks the path – trademarks vs. monopolies!",
+        bossConfig: {
+          health: 16,
+          taunts: [
+            "Patent Baron: \"Trademarks are not relevant for innovation!\"",
+            "Patent Baron: \"Patents are the true form of innovation!\"",
+            "Patent Baron: \"Only patents reward true inventors; trademarks ride on reputation!\"",
+          ],
+        },
+      },
+    ];
 
-        .game-controls kbd {
-            background: var(--accent);
-            color: var(--paper);
-            padding: 2px 8px;
-            border-radius: 3px;
-            font-weight: bold;
-            margin-right: 10px;
-        }
+    let environmentIndex = 0;
+    let currentEnvironment = ENVIRONMENTS[environmentIndex];
+    const VINE_ROWS = 5;
+    const vineField = [];
+    const stars = [];
+    const particles = [];
+    const projectiles = [];
+    const trademarkBursts = [];
+    const playerProjectiles = [];
+    let surferHelper = null;
+    let surferRescueUsed = false;
+    let surferSequenceActive = false;
+    let playerHasMoved = false;
+    let enemyHoldTimer = Infinity;
+    let enemiesPaused = true;
+    let boss = null;
+    let bossActive = false;
+    let bossDefeated = false;
+    let bossTauntQueue = [];
+    let bossTauntTimer = null;
+    let bossAwaitingChoice = false;
+    let bossConversationActive = false;
+    let bossDialogueQueue = [];
+    let friendDancePhase = 0;
+    const gateFriends = [{ offsetX: -60, color: "#ffe4e4" }, { offsetX: -30, color: "#ffd1c1" }, { offsetX: 10, color: "#ffc6d9" }];
+    const keys = {};
+    let musicCtx = null;
+    let musicTimer = null;
+    let musicActive = false;
+    
+    const NOTE_FREQ = { G3: 196.00, A3: 220.00, B3: 246.94, C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00, A4: 440.00, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99 };
 
-        @media (max-width: 700px) {
-            #game-container {
-                height: 400px;
-            }
-            .game-title {
-                font-size: 40px;
-            }
+    dialogButtons.forEach(btn => btn.addEventListener("click", () => handleBossChoice(btn.dataset.choice)));
+    if (dialogContinue) dialogContinue.addEventListener("click", advanceBossDialogue);
+
+    const musicPattern = [
+      { notes: ["E4"], duration: 0.32 }, { notes: ["E4"], duration: 0.32 }, { notes: ["F4"], duration: 0.32 },
+      { notes: ["G4"], duration: 0.32 }, { notes: ["G4"], duration: 0.32 }, { notes: ["F4"], duration: 0.32 },
+      { notes: ["E4"], duration: 0.32 }, { notes: ["D4"], duration: 0.32 }, { notes: ["C4"], duration: 0.32 },
+      { notes: ["C4"], duration: 0.32 }, { notes: ["D4"], duration: 0.32 }, { notes: ["E4"], duration: 0.32 },
+      { notes: ["E4"], duration: 0.48 }, { notes: ["D4"], duration: 0.16 }, { notes: ["D4"], duration: 0.64 }
+    ];
+
+    window.addEventListener("keydown", e => {
+      if(!gameHasFocus) return; // Ignore keys if game hasn't started
+      const key = e.key.toLowerCase();
+      
+      // Prevent scrolling for game keys
+      if(["arrowup","arrowdown","arrowleft","arrowright"," "].includes(key)) {
+        e.preventDefault();
+      }
+
+      if (bossConversationActive && !bossAwaitingChoice) {
+        advanceBossDialogue();
+        return;
+      }
+      if (bossAwaitingChoice) {
+        if (key === "1") handleBossChoice("patent");
+        if (key === "2") handleBossChoice("trademark");
+        return;
+      }
+      keys[key] = true;
+      if (key === "r" && gameOver) resetGame();
+      if (key === "f" || key === "k") attemptTrademarkThrow();
+      if (["arrowleft","arrowright","a","d","w","s","arrowup","arrowdown"," ","shift","q"].includes(key)) registerPlayerMovement();
+      if (!musicActive && ["arrowup","arrowdown","arrowleft","arrowright","w","a","s","d"].includes(key)) startMusic();
+    });
+
+    window.addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; });
+
+    function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+    function rand(min, max) { return Math.random() * (max - min) + min; }
+
+    function initBackdrop() {
+      if (!stars.length) {
+        for (let i = 0; i < 70; i++) stars.push({ x: rand(0, WIDTH), y: rand(10, HEIGHT * 0.55), size: rand(1, 3), speed: rand(5, 20), alpha: rand(0.4, 0.9) });
+      }
+      if (!vineField.length) {
+        for (let i = 0; i < VINE_ROWS; i++) vineField.push({ y: GROUND + 10 + i * 12, color: `rgba(${100 + i * 10}, ${120 + i * 15}, ${90 + i * 8}, 0.4)`, sway: rand(0.2, 0.6) });
+      }
+    }
+
+    class Player {
+      constructor() { this.reset(); }
+      reset() {
+        this.x = 140; this.y = GROUND - 30; this.vx = 0; this.vy = 0;
+        this.width = 32; this.height = 40; this.onGround = false; this.dashTimer = 0;
+        this.health = 3; this.trust = 0; this.grapes = 0; this.giCharters = 0;
+        this.ctmCharters = 0; this.innovation = 0; this.trademarks = 0;
+        this.trademarkCooldown = 0; this.facing = 1;
+      }
+      update(dt) {
+        if (keys["arrowright"] || keys["d"]) { this.vx = PLAYER_SPEED; this.facing = 1; }
+        else if (keys["arrowleft"] || keys["a"]) { this.vx = -PLAYER_SPEED; this.facing = -1; }
+        else { this.vx *= FRICTION; }
+
+        if ((keys["w"] || keys["arrowup"] || keys[" "]) && this.onGround) {
+          this.vy = -JUMP_FORCE; this.onGround = false; keys["w"] = keys["arrowup"] = keys[" "] = false;
+        }
+        this.trademarkCooldown = Math.max(0, this.trademarkCooldown - dt);
+        
+        if ((keys["shift"] || keys["q"]) && this.dashTimer <= 0) {
+          this.vx += Math.sign(this.vx || 1) * DASH_FORCE;
+          this.dashTimer = DASH_COOLDOWN;
+          showMessage("Dash!", 0.6);
+        }
+        this.dashTimer -= dt;
+        this.vy += GRAVITY * dt;
+        this.vy = Math.min(this.vy, 1500);
+        this.x += this.vx * dt;
+        this.y += this.vy * dt;
+
+        if (this.y + this.height >= GROUND) {
+          this.y = GROUND - this.height; this.vy = 0; this.onGround = true;
         }
     </style>
 </head>
@@ -248,313 +474,558 @@
         </footer>
     </div>
 
-<script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-
-// --- AUDIO SYNTHESIZER ---
-const AudioEngine = {
-    ctx: null,
-    isPlaying: false,
-
-    init: function() {
-        const AC = window.AudioContext || window.webkitAudioContext;
-        this.ctx = new AC();
-    },
-
-    playTone: function(freq, type='square', dur=0.1) {
-        if(!this.ctx) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = type;
-        osc.frequency.value = freq;
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur);
-        osc.start();
-        osc.stop(this.ctx.currentTime + dur);
-    },
-
-    startMusic: function() {
-        if(this.isPlaying) return;
-        this.isPlaying = true;
-        let idx = 0;
-        const notes = [110, 110, 110, 130, 146, 146, 130, 110];
-
-        const loop = () => {
-            if(!this.isPlaying) return;
-            this.playTone(notes[idx], 'sawtooth', 0.15);
-            idx = (idx + 1) % notes.length;
-            setTimeout(loop, 150);
-        };
-        loop();
-    }
-};
-
-// --- CONFIG ---
-const GRAVITY = 2000;
-const JUMP_FORCE = 900;
-const GROUND_OFFSET = 100;
-
-// --- GAME STATE ---
-let gameState = {
-    active: false,
-    cameraX: 0,
-    score: 0,
-    frame: 0
-};
-
-const keys = { up:false, left:false, right:false, space:false };
-
-window.addEventListener('keydown', e => {
-    if(e.key === 'w' || e.key === 'ArrowUp' || e.key === ' ') keys.up = true;
-    if(e.key === 'd' || e.key === 'ArrowRight') keys.right = true;
-    if(e.key === 'a' || e.key === 'ArrowLeft') keys.left = true;
-});
-
-window.addEventListener('keyup', e => {
-    if(e.key === 'w' || e.key === 'ArrowUp' || e.key === ' ') keys.up = false;
-    if(e.key === 'd' || e.key === 'ArrowRight') keys.right = false;
-    if(e.key === 'a' || e.key === 'ArrowLeft') keys.left = false;
-});
-
-// --- CLASSES ---
-class Player {
-    constructor() {
-        this.w = 40;
-        this.h = 70;
-        this.x = 100;
-        this.y = 0;
-        this.vx = 0;
-        this.vy = 0;
-        this.hp = 100;
-        this.onGround = false;
-        this.color = '#FFFF00';
+    class Collectible {
+      constructor(x, y, spec) {
+        this.x = x; this.y = y; this.type = spec.type; this.color = spec.color;
+        this.label = spec.label; this.radius = spec.type === "ctm" ? 14 : 11;
+        this.collected = false;
+      }
+      draw() {
+        ctx.beginPath(); ctx.fillStyle = this.color;
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#05060c"; ctx.font = "10px 'Segoe UI'";
+        ctx.textAlign = "center"; ctx.fillText(this.type.toUpperCase(), this.x, this.y + 3);
+      }
     }
 
-    update(dt) {
-        const groundY = canvas.height - GROUND_OFFSET - this.h;
-
-        if(keys.right) this.vx += 2000 * dt;
-        else if(keys.left) this.vx -= 2000 * dt;
-        else this.vx *= 0.85;
-
-        this.vx = Math.max(-800, Math.min(800, this.vx));
-        this.vy += GRAVITY * dt;
-        this.y += this.vy * dt;
-
-        if(this.y >= groundY) {
-            this.y = groundY;
-            this.vy = 0;
-            this.onGround = true;
-        } else {
-            this.onGround = false;
-        }
-
-        if(keys.up && this.onGround) {
-            this.vy = -JUMP_FORCE;
-            this.onGround = false;
-            AudioEngine.playTone(300, 'square', 0.2);
-        }
-
-        this.x += this.vx * dt;
-        if(this.x < 0) this.x = 0;
+    class Obstacle {
+      constructor(x, width, height) { this.x = x; this.width = width; this.height = height; }
+      draw() { ctx.fillStyle = "#46352b"; ctx.fillRect(this.x, GROUND - this.height, this.width, this.height); }
     }
 
-    draw() {
-        const screenX = this.x - gameState.cameraX;
-        const screenY = this.y;
-
-        ctx.save();
-
-        ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        ctx.beginPath();
-        ctx.ellipse(screenX + this.w/2, screenY + this.h, 20, 5, 0, 0, Math.PI*2);
-        ctx.fill();
-
-        ctx.fillStyle = this.color;
-        ctx.shadowColor = this.color;
-        ctx.shadowBlur = 20;
-        ctx.fillRect(screenX, screenY, this.w, this.h);
-        ctx.shadowBlur = 0;
-
-        ctx.fillStyle = '#000';
-        if(this.vx >= 0) {
-            ctx.fillRect(screenX + 25, screenY + 15, 15, 8);
-        } else {
-            ctx.fillRect(screenX, screenY + 15, 15, 8);
+    class Enemy {
+      constructor(x, range, baseSpeed = 90) {
+        this.x = x; this.baseX = x; this.range = range;
+        this.width = 36; this.height = 48; this.y = GROUND - this.height;
+        this.dir = 1; this.speed = baseSpeed; this.alive = true;
+        this.chaseTimer = 0; this.vy = 0; this.jumpTimer = rand(1.2, 2.6); this.fireTimer = rand(1.1, 2.2);
+      }
+      update(dt, multiplier = 1, target = null) {
+        if (!this.alive) return;
+        this.jumpTimer -= dt;
+        if (this.jumpTimer <= 0 && this.onGround()) { this.vy = -JUMP_FORCE * 0.55; this.jumpTimer = rand(1.2, 2.6); }
+        this.vy += GRAVITY * 0.8 * dt; this.y += this.vy * dt;
+        if (this.y >= GROUND - this.height) { this.y = GROUND - this.height; this.vy = 0; }
+        
+        const center = this.x + this.width / 2;
+        const playerCenter = target ? target.x + target.width / 2 : center;
+        if (target && Math.abs(playerCenter - center) < 300) {
+          this.chaseTimer = 1.2; this.dir = playerCenter >= center ? 1 : -1;
         }
-
-        if(Math.abs(this.vx) > 400) {
-            ctx.fillStyle = '#FFFFFF';
-            ctx.beginPath();
-            ctx.ellipse(screenX + 20, screenY + 70, 40, 8, 0, 0, Math.PI*2);
-            ctx.fill();
+        const chaseBoost = this.chaseTimer > 0 ? 2.1 : 1.1;
+        this.x += this.dir * this.speed * multiplier * chaseBoost * dt;
+        if (this.x > WIDTH - this.width) this.x = WIDTH - this.width;
+        if (this.x < 0) this.x = 0;
+        if (this.chaseTimer <= 0) {
+          if (this.x > this.baseX + this.range) this.dir = -1;
+          if (this.x < this.baseX - this.range) this.dir = 1;
         }
-
+        this.chaseTimer = Math.max(0, this.chaseTimer - dt);
+        this.fireTimer -= dt;
+        if (this.fireTimer <= 0 && target) {
+          fireProjectile(this, this.dir); this.fireTimer = rand(0.9, 1.8);
+        }
+      }
+      onGround() { return this.y >= GROUND - this.height - 1; }
+      draw() {
+        if (!this.alive) return;
+        ctx.save(); ctx.fillStyle = "#ff6b6b";
+        ctx.beginPath(); ctx.roundRect(this.x, this.y + 12, this.width, this.height - 12, 12); ctx.fill();
+        ctx.fillStyle = "#ffd4c4"; ctx.beginPath(); ctx.arc(this.x + this.width / 2, this.y + 12, 12, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = "#420000"; ctx.lineWidth = 2; ctx.strokeRect(this.x - 6, this.y + 24, this.width + 12, 8);
         ctx.restore();
-    }
-}
-
-class Boss {
-    constructor() {
-        this.active = false;
-        this.x = 0;
-        this.y = 0;
-        this.w = 120;
-        this.h = 160;
-        this.hp = 1000;
+      }
     }
 
-    update(dt) {
-        if(!this.active) {
-            if(player.x > 5000) {
-                this.active = true;
-                this.hp = 1000;
+    class Boss {
+      constructor(config = {}) {
+        this.width = 200; this.height = 220; this.maxHealth = config.health || 14;
+        this.health = this.maxHealth; this.fireBase = config.fireCooldown || 1.4;
+        this.fireTimer = 1.6; this.phase = 0;
+        this.x = WIDTH - this.width - 180; this.y = GROUND - this.height; this.color = "#c99268";
+      }
+      isAlive() { return this.health > 0; }
+      takeDamage(amount = 1) {
+        if (!this.isAlive()) return false;
+        this.health = Math.max(0, this.health - amount);
+        return this.health === 0;
+      }
+      update(dt, target, active = false) {
+        this.phase += dt;
+        if (!active || !this.isAlive()) return;
+        this.fireTimer -= dt;
+        if (this.fireTimer <= 0) {
+          bossFirePatent(this, target);
+          this.fireTimer = Math.max(0.8, this.fireBase + rand(-0.2, 0.3));
+        }
+      }
+      getRect() { return { x: this.x, y: this.y, width: this.width, height: this.height }; }
+      draw() {
+        if (!this.isAlive()) return;
+        ctx.save();
+        const bob = Math.sin(this.phase * 2) * 4;
+        const sway = Math.sin(this.phase * 1.4) * 10;
+        ctx.translate(this.x + sway, this.y + bob);
+        ctx.fillStyle = "#2c1f2b"; ctx.fillRect(0, this.height - 60, this.width, 60);
+        ctx.fillStyle = this.color; ctx.beginPath(); ctx.roundRect(20, 80, this.width - 40, this.height - 160, 50); ctx.fill();
+        ctx.fillStyle = "#f2c9b1"; ctx.beginPath(); ctx.arc(this.width / 2, 40, 40, 0, Math.PI * 2); ctx.fill();
+        // Glasses
+        ctx.strokeStyle = "#1b1b1b"; ctx.lineWidth = 4;
+        ctx.beginPath(); ctx.arc(this.width / 2 - 22, 40, 18, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(this.width / 2 + 22, 40, 18, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(this.width / 2 - 4, 40); ctx.lineTo(this.width / 2 + 4, 40); ctx.stroke();
+        // Health bar
+        const margin = 8;
+        ctx.fillStyle = "#2b1f26"; ctx.fillRect(margin, this.height - 50, this.width - margin * 2, 20);
+        const ratio = this.health / this.maxHealth;
+        ctx.fillStyle = ratio > 0.5 ? "#8bff8f" : ratio > 0.25 ? "#ffd35c" : "#ff6b6b";
+        ctx.fillRect(margin + 2, this.height - 48, (this.width - margin * 2 - 4) * ratio, 16);
+        ctx.restore();
+      }
+    }
+
+    // ... Surfer and Helpers ...
+    class SurferHelper {
+      constructor(target) {
+        this.target = target; this.x = WIDTH + 200; this.y = 80;
+        this.speed = 520; this.targetX = WIDTH / 2 - 40; this.targetY = GROUND - 90;
+        this.state = "enter";
+        this.dialogLines = ["Surfer Ally: \"Aloha!\"", "Surfer Ally: \"Trademarks are life!\"", "Surfer Ally: \"Keep sharing!\""];
+        this.dialogIndex = 0; this.dialogTimer = 0; this.waveTime = 0;
+      }
+      update(dt) {
+        this.waveTime += dt;
+        if(this.state === "enter") {
+          this.x -= this.speed * dt; this.y = 80 + Math.sin(this.waveTime * 4) * 40;
+          if (this.x <= this.targetX) { this.state = "dialogue"; this.dialogTimer = 0; showMessage(this.dialogLines[0], 2); }
+        } else if(this.state === "dialogue") {
+          this.dialogTimer += dt;
+          if (this.dialogTimer >= 2.1) {
+            this.dialogIndex++;
+            if (this.dialogIndex < this.dialogLines.length) { this.dialogTimer = 0; showMessage(this.dialogLines[this.dialogIndex], 2); }
+            else {
+              player.health = Math.min(3, player.health + 1); surferRescueUsed = true;
+              showMessage("Surfer Ally: \"Ride on!\"", 1.8); this.state = "exit";
             }
-            return;
+          }
+        } else if(this.state === "exit") {
+          this.x -= this.speed * dt; this.y -= dt * 60;
+          if (this.x < -200) { surferSequenceActive = false; surferHelper = null; }
         }
-
-        this.x = gameState.cameraX + canvas.width - 200;
-        this.y = canvas.height - GROUND_OFFSET - 200 + Math.sin(Date.now()/500)*30;
+      }
+      draw() {
+        ctx.save(); ctx.translate(this.x, this.y);
+        ctx.rotate(Math.sin(this.waveTime * 4) * 0.15);
+        ctx.fillStyle = "#ff8c42"; ctx.beginPath(); ctx.ellipse(50, 25, 90, 16, 0.2, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#f4e3c3"; ctx.beginPath(); ctx.arc(20, -5, 12, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = "#6cd2ff"; ctx.fillRect(14, 8, 12, 40);
+        ctx.restore();
+      }
     }
 
-    draw() {
-        if(!this.active) return;
-        const screenX = this.x - gameState.cameraX;
-
-        ctx.fillStyle = '#550055';
-        ctx.shadowColor = '#ff00ff';
-        ctx.shadowBlur = 30;
-        ctx.fillRect(screenX, this.y, this.w, this.h);
-
-        ctx.fillStyle = '#ff0000';
-        ctx.shadowBlur = 10;
-        ctx.shadowColor = '#ff0000';
-        ctx.beginPath();
-        ctx.arc(screenX + 30, this.y + 50, 10, 0, Math.PI*2);
-        ctx.arc(screenX + 90, this.y + 50, 10, 0, Math.PI*2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
+    function maybeSummonSurfer() {
+      if (surferRescueUsed || surferHelper) return;
+      if (player.health === 1 && !gameOver) {
+        surferHelper = new SurferHelper(player); surferSequenceActive = true;
+        showMessage("A surfer ally is rushing to help!", 1.5);
+      }
     }
-}
 
-let player = new Player();
-let boss = new Boss();
-let obstacles = [];
+    class Goal {
+      constructor(x) { this.x = x; this.width = 28; this.height = 96; }
+      draw(environment) {
+        const accent = environment?.id === "low" ? "#f26c7f" : "#8be0c9";
+        ctx.save(); ctx.translate(this.x, GROUND - this.height);
+        ctx.fillStyle = "#2d354f"; ctx.beginPath(); ctx.moveTo(0, this.height);
+        ctx.lineTo(0, 20); ctx.quadraticCurveTo(this.width / 2, 0, this.width, 20); ctx.lineTo(this.width, this.height); ctx.fill();
+        ctx.strokeStyle = accent; ctx.lineWidth = 4; ctx.stroke();
+        ctx.fillStyle = accent; ctx.font = "bold 18px 'Segoe UI'"; ctx.textAlign = "center";
+        ctx.fillText((environment?.goalLabel || "GI"), this.width / 2, this.height / 2);
+        ctx.restore();
+      }
+    }
 
-function spawnLevel() {
-    obstacles = [];
-    for(let i=1; i<50; i++) {
-        obstacles.push({
-            x: i * 600 + Math.random()*300,
-            y: canvas.height - GROUND_OFFSET - 50,
-            w: 50,
-            h: 50,
-            active: true
+    // ... Collision & Mechanics ...
+    function rectsOverlap(a, b) {
+      return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+    }
+    function playerHitsCollectible(player, collectible) {
+      const dx = player.x + player.width / 2 - collectible.x;
+      const dy = player.y + player.height / 2 - collectible.y;
+      return Math.hypot(dx, dy) < collectible.radius + Math.max(player.width, player.height) / 2;
+    }
+    
+    // Definitions
+    const baseCollectibleDefs = [
+      { x: 280, y: GROUND - 60, spec: { type: "gi", color: "#91e0c0", label: "GI Charter" } },
+      { x: 520, y: GROUND - 90, spec: { type: "ctm", color: "#f5c37c", label: "CTM Sprint" } },
+      { x: 720, y: GROUND - 70, spec: { type: "gi", color: "#91e0c0", label: "PDO Upgrade" } },
+      { x: 920, y: GROUND - 120, spec: { type: "ctm", color: "#f5c37c", label: "Brand Collab" } },
+      { x: 1130, y: GROUND - 70, spec: { type: "grape", color: "#c88bff", label: "Micro Innovation" } },
+      { x: 1290, y: GROUND - 110, spec: { type: "gi", color: "#91e0c0", label: "GI Booster" } },
+      { x: 1400, y: GROUND - 90, spec: { type: "ctm", color: "#f5c37c", label: "Consortium Pact" } },
+    ];
+    const baseEnemyDefs = [
+      { x: 240, range: 90, speed: 150 }, { x: 480, range: 100, speed: 170 }, { x: 760, range: 80, speed: 160 },
+      { x: 1030, range: 100, speed: 155 }, { x: 1240, range: 90, speed: 150 }, { x: 1380, range: 70, speed: 145 },
+    ];
+    const baseObstacleDefs = [
+      { x: 320, width: 130, height: 60 }, { x: 580, width: 160, height: 50 }, { x: 800, width: 150, height: 80 },
+      { x: 1020, width: 160, height: 54 }, { x: 1220, width: 130, height: 70 }, { x: 1340, width: 110, height: 60 },
+    ];
+
+    let obstacles = [];
+    const goal = new Goal(WIDTH - 120);
+    let player = new Player();
+    let collectibles = [];
+    let enemies = [];
+
+    function buildCollectibles() {
+      const defs = [...baseCollectibleDefs];
+      if (currentEnvironment.extraCollectibles) currentEnvironment.extraCollectibles.forEach(e => defs.push({ x: e.x, y: e.y ?? GROUND - 60, spec: e.spec }));
+      return defs.map(d => new Collectible(d.x, d.y, d.spec));
+    }
+    function buildEnemies() {
+      if (currentEnvironment?.bossConfig) return [];
+      const defs = [...baseEnemyDefs];
+      if (currentEnvironment.extraEnemies) defs.push(...currentEnvironment.extraEnemies);
+      return defs.map(d => new Enemy(d.x, d.range, d.speed));
+    }
+    function buildObstacles() {
+      const shuffled = baseObstacleDefs.map(d => ({ ...d }));
+      shuffled.forEach(d => {
+        d.x += rand(-80, 80);
+        d.x = clamp(d.x, 80, goal.x - d.width - GOAL_FRIEND_BUFFER);
+      });
+      return shuffled.map(d => new Obstacle(d.x, d.width, d.height));
+    }
+
+    // State management
+    let lastTime = 0;
+    let gameOver = false;
+    let win = false;
+    let messageTimeout = null;
+
+    function showMessage(text = "", duration = 2) {
+      if (!message) return;
+      if (messageTimeout) clearTimeout(messageTimeout);
+      message.textContent = text;
+      message.style.display = text ? "block" : "none";
+      if (text && duration > 0) messageTimeout = setTimeout(() => { message.style.display = "none"; }, duration * 1000);
+    }
+
+    function startMusic() {
+      if (musicActive) return;
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      if (!musicCtx || musicCtx.state === "closed") musicCtx = new AudioCtx();
+      else if (musicCtx.state === "suspended") musicCtx.resume();
+      
+      let idx = 0;
+      const playNote = () => {
+        if (!musicCtx || musicCtx.state === "closed") return;
+        const note = musicPattern[idx];
+        note.notes.forEach((name, idxVoice) => {
+          const osc = musicCtx.createOscillator();
+          const gain = musicCtx.createGain();
+          osc.type = idxVoice === 0 ? "square" : "triangle";
+          osc.frequency.value = NOTE_FREQ[name] || 440;
+          gain.gain.value = idxVoice === 0 ? 0.1 : 0.05;
+          gain.gain.exponentialRampToValueAtTime(0.01, musicCtx.currentTime + note.duration * 0.9);
+          osc.connect(gain).connect(musicCtx.destination);
+          osc.start();
+          osc.stop(musicCtx.currentTime + note.duration);
         });
+        idx = (idx + 1) % musicPattern.length;
+        musicTimer = setTimeout(playNote, note.duration * 1000);
+      };
+      musicActive = true;
+      playNote();
     }
-}
 
-function initGame() {
-    AudioEngine.init();
-    AudioEngine.startMusic();
-    document.getElementById('start-screen').classList.add('hidden');
-    resetGame();
-}
-
-function resetGame() {
-    resize();
-    player = new Player();
-    boss = new Boss();
-    spawnLevel();
-    gameState = { active: true, cameraX: 0, score: 0, frame: 0 };
-    document.getElementById('game-over-screen').classList.add('hidden');
-    gameLoop();
-}
-
-function update(dt) {
-    if(!gameState.active) return;
-
-    player.update(dt);
-    boss.update(dt);
-
-    let targetCamX = player.x - canvas.width * 0.2;
-    if(targetCamX < 0) targetCamX = 0;
-    gameState.cameraX += (targetCamX - gameState.cameraX) * 5 * dt;
-
-    obstacles.forEach(obs => {
-        if(!obs.active) return;
-        if(player.x < obs.x + obs.w && player.x + player.w > obs.x &&
-           player.y < obs.y + obs.h && player.y + player.h > obs.y) {
-             player.hp -= 10;
-             obs.active = false;
-             AudioEngine.playTone(100, 'sawtooth', 0.3);
-             if(player.hp <= 0) {
-                 gameState.active = false;
-                 document.getElementById('game-over-screen').classList.remove('hidden');
-             }
-        }
-    });
-
-    document.getElementById('hp-val').innerText = Math.floor(player.hp);
-    document.getElementById('score-val').innerText = Math.floor(player.x / 10);
-}
-
-function draw() {
-    ctx.fillStyle = '#000000';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.save();
-    ctx.translate(-gameState.cameraX * 0.5, 0);
-    ctx.strokeStyle = 'rgba(255, 0, 85, 0.3)';
-    ctx.lineWidth = 2;
-    for(let i=0; i<canvas.width + gameState.cameraX + 1000; i+=100) {
-        ctx.beginPath();
-        ctx.moveTo(i, 0);
-        ctx.lineTo(i, canvas.height);
-        ctx.stroke();
+    function startEnvironment(index, { preserveStats = false, showIntro = true } = {}) {
+      environmentIndex = index;
+      currentEnvironment = ENVIRONMENTS[environmentIndex];
+      collectibles = buildCollectibles();
+      enemies = buildEnemies();
+      obstacles = buildObstacles();
+      projectiles.length = 0;
+      trademarkBursts.length = 0;
+      playerProjectiles.length = 0;
+      surferHelper = null;
+      surferSequenceActive = false;
+      playerHasMoved = false;
+      enemyHoldTimer = Infinity;
+      enemiesPaused = true;
+      bossTauntQueue = [];
+      if (currentEnvironment.bossConfig) {
+        boss = new Boss(currentEnvironment.bossConfig);
+        bossDefeated = bossActive = false;
+        beginBossDialogue(["Patent Baron: \"I've reviewed every trademark.\"", "Patent Baron: \"None rival a patent.\"", "You: \"Innovation thrives when shared.\""]);
+      } else {
+        boss = null;
+      }
+      if (!preserveStats) player.reset();
+      else {
+        player.x = 140; player.y = GROUND - player.height;
+        player.vx = 0; player.vy = 0; player.onGround = false;
+      }
+      gameOver = win = false;
+      if (showIntro && currentEnvironment.introMessage) showMessage(currentEnvironment.introMessage, 3.5);
     }
-    ctx.restore();
 
-    ctx.fillStyle = '#1a1a1a';
-    ctx.fillRect(0, canvas.height - GROUND_OFFSET, canvas.width, GROUND_OFFSET);
-    ctx.fillStyle = '#ff0055';
-    ctx.fillRect(0, canvas.height - GROUND_OFFSET, canvas.width, 4);
+    function resetGame() {
+      startEnvironment(0, { preserveStats: false });
+      lastTime = performance.now();
+    }
 
-    ctx.fillStyle = '#888';
-    obstacles.forEach(obs => {
-        if(!obs.active) return;
-        let sx = obs.x - gameState.cameraX;
-        if(sx > -100 && sx < canvas.width) {
-            ctx.fillRect(sx, obs.y, obs.w, obs.h);
+    function spawnParticles(x, y, color) {
+      for (let i = 0; i < 8; i++) particles.push({ x, y, vx: rand(-60, 60), vy: rand(-120, -20), life: rand(0.4, 0.8), color });
+    }
+    function updateParticles(dt) {
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i]; p.life -= dt;
+        if (p.life <= 0) { particles.splice(i, 1); continue; }
+        p.vy += 200 * dt; p.x += p.vx * dt; p.y += p.vy * dt;
+      }
+    }
+    function drawParticles() {
+      particles.forEach(p => { ctx.fillStyle = p.color; ctx.globalAlpha = Math.max(0, p.life); ctx.fillRect(p.x, p.y, 4, 4); ctx.globalAlpha = 1; });
+    }
+
+    function bossFirePatent(entity, target) {
+      const sourceX = entity.x + entity.width / 2; const sourceY = entity.y + 40;
+      const targetX = target ? target.x + target.width / 2 : sourceX - 1;
+      const dir = Math.sign(targetX - sourceX) || -1;
+      projectiles.push({ x: sourceX, y: sourceY, vx: dir * 320, vy: -80 + Math.random() * 160, life: 3, kind: "patent" });
+      showMessage("Patent barrage incoming!", 0.7);
+    }
+    function startBossTaunts(lines = []) {
+      if (bossTauntTimer) clearTimeout(bossTauntTimer);
+      bossTauntQueue = [...lines];
+      const advanceTaunt = () => {
+        if (!bossTauntQueue.length) { bossActive = true; showMessage("Prove trademarks power innovation!", 2); return; }
+        showMessage(bossTauntQueue.shift(), 2.6);
+        bossTauntTimer = setTimeout(advanceTaunt, 2600);
+      };
+      advanceTaunt();
+    }
+    function beginBossDialogue(lines) {
+      bossConversationActive = true; bossDialogueQueue = [...lines]; bossAwaitingChoice = false;
+      if (!bossDialogueQueue.length) { showBossChoicePrompt(); return; }
+      dialogOverlay.style.display = "flex"; dialogText.innerHTML = bossDialogueQueue[0];
+      dialogContinue.style.display = "inline-block"; dialogButtons.forEach(b => b.style.display = "none");
+    }
+    function advanceBossDialogue() {
+      if (!bossConversationActive) return;
+      bossDialogueQueue.shift();
+      if (!bossDialogueQueue.length) { bossConversationActive = false; showBossChoicePrompt(); return; }
+      dialogText.innerHTML = bossDialogueQueue[0];
+    }
+    function showBossChoicePrompt() {
+      bossAwaitingChoice = true; dialogOverlay.style.display = "flex";
+      dialogText.innerHTML = `Patent Baron:<br>"Pick your metric for innovation."`;
+      dialogButtons.forEach(b => b.style.display = "inline-block");
+      dialogContinue.style.display = "none";
+    }
+    function handleBossChoice(choice) {
+      if (!bossAwaitingChoice) return;
+      if (choice === "patent") {
+        dialogText.innerHTML = `Patent Baron smirks:<br>"Exactly. Patents are innovation."`;
+        showMessage("He refuses to fight.", 2.4); return;
+      }
+      bossAwaitingChoice = false; dialogOverlay.style.display = "none";
+      showMessage(`You: "Trademarks capture innovation!"`, 2.5);
+      setTimeout(() => startBossTaunts(currentEnvironment.bossConfig?.taunts || []), 1200);
+    }
+    function registerPlayerMovement() {
+      if (playerHasMoved) return;
+      playerHasMoved = true; enemyHoldTimer = 1; enemiesPaused = true;
+      showMessage("Free riders mobilize in 1 second!", 1.1);
+    }
+    function attemptTrademarkThrow() {
+      if (gameOver || player.trademarkCooldown > 0) return;
+      player.trademarkCooldown = TRADEMARK_COOLDOWN;
+      playerProjectiles.push({ x: player.x + player.width/2 + player.facing*24, y: player.y + player.height/2 - 6, vx: player.facing * TRADEMARK_SPEED, life: 1.1 });
+    }
+    function fireProjectile(enemy, dir) {
+      projectiles.push({ x: enemy.x + enemy.width/2, y: enemy.y + enemy.height/2, vx: dir * rand(260, 360), vy: rand(-40, 40), life: 2.5, kind: "enemy" });
+    }
+
+    // Main Update Loop
+    function update(timestamp) {
+      if (lastTime === 0) lastTime = timestamp;
+      let dt = Math.min((timestamp - lastTime) / 1000, 0.016);
+      lastTime = timestamp;
+      friendDancePhase += dt * 6;
+      
+      if(!gameHasFocus) return; // Pause updates if not focused
+
+      if (playerHasMoved && enemiesPaused && Number.isFinite(enemyHoldTimer)) {
+        enemyHoldTimer -= dt; if (enemyHoldTimer <= 0) { enemiesPaused = false; enemyHoldTimer = null; }
+      }
+      if (gameOver) return;
+      
+      player.update(dt);
+      
+      const speedMult = currentEnvironment.enemySpeedMultiplier || 1;
+      if (!enemiesPaused && !surferSequenceActive) {
+        enemies.forEach(e => {
+          e.update(dt, speedMult, player);
+          if (currentEnvironment.grapeTheft) {
+            // Theft logic
+            collectibles.forEach(i => {
+              if (i.collected || i.type !== "grape") return;
+              if (Math.hypot(e.x + e.width/2 - i.x, e.y - i.y) < 50) {
+                i.collected = true; player.trust = Math.max(0, player.trust - 4);
+                showMessage("Free rider stole innovation!", 1.2);
+              }
+            });
+          }
+        });
+      }
+      if (boss && !surferSequenceActive) boss.update(dt, player, bossActive);
+      if (surferHelper) surferHelper.update(dt);
+      
+      // Collisions: Obstacles
+      obstacles.forEach(o => {
+        if (rectsOverlap(player, { x: o.x, y: GROUND - o.height, width: o.width, height: o.height })) {
+          if (player.y + player.height - player.vy*dt <= GROUND - o.height) { player.y = GROUND - o.height - player.height; player.vy = 0; player.onGround = true; }
+          else if (player.y - player.vy*dt >= GROUND) { player.y = GROUND; player.vy = 0; }
+          else if (player.x < o.x + o.width/2) { player.x = o.x - player.width - 1; player.vx = 0; }
+          else { player.x = o.x + o.width + 1; player.vx = 0; }
         }
-    });
+      });
+      
+      // Collisions: Collectibles
+      collectibles.forEach(i => {
+        if (!i.collected && playerHitsCollectible(player, i)) {
+          i.collected = true;
+          if(i.type === "gi") { player.giCharters++; player.trust += 6; player.innovation+=4; showMessage("GI Adopted!", 1.5); }
+          else if(i.type === "ctm") { player.ctmCharters++; player.trust += 3; player.innovation+=6; showMessage("CTM Sprint!", 1.5); }
+          else { player.grapes++; player.innovation+=2; showMessage("Micro Innovation!", 1.2); }
+          spawnParticles(i.x, i.y, i.color);
+        }
+      });
 
-    boss.draw();
-    player.draw();
-}
+      // Projectiles
+      for (let i = playerProjectiles.length - 1; i >= 0; i--) {
+        const s = playerProjectiles[i]; s.life -= dt; s.x += s.vx * dt;
+        if (s.life <= 0) { playerProjectiles.splice(i, 1); continue; }
+        // Hit logic simplified for brevity: hits enemy?
+        let hit = false;
+        enemies.forEach(e => {
+           if(e.alive && rectsOverlap({x:s.x-10,y:s.y-10,width:20,height:20}, e)) {
+             e.alive = false; playerProjectiles.splice(i, 1); hit = true;
+             player.trust += 2; spawnParticles(e.x+e.width/2, e.y, "#ffd95b");
+           }
+        });
+        if(hit) continue;
+        if(boss && bossActive && boss.isAlive() && rectsOverlap({x:s.x-10,y:s.y-10,width:20,height:20}, boss.getRect())) {
+           playerProjectiles.splice(i, 1);
+           if(boss.takeDamage(1)) { bossDefeated = true; bossActive = false; win=true; gameOver=true; showMessage("Patent Baron Defeated!", 4); }
+           spawnParticles(boss.x+boss.width/2, boss.y+boss.height/2, "#ffd95b");
+        }
+      }
+      
+      // Enemy Projectiles
+      for (let i = projectiles.length - 1; i >= 0; i--) {
+        const p = projectiles[i]; p.life -= dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 120 * dt;
+        if (p.life <= 0) { projectiles.splice(i, 1); continue; }
+        if (rectsOverlap({x:p.x-6,y:p.y-6,width:12,height:12}, player)) {
+          projectiles.splice(i, 1); player.health--; maybeSummonSurfer();
+          if (player.health <= 0) { gameOver = true; showMessage("Game Over", 3); }
+        }
+      }
 
-let lastTime = 0;
-function gameLoop(timestamp) {
-    if(!gameState.active) return;
-    const dt = Math.min((timestamp - lastTime) / 1000, 0.1);
-    lastTime = timestamp;
+      // Enemy Collisions
+      enemies.forEach(e => {
+        if(e.alive && rectsOverlap(player, e)) {
+          if(player.vy > 0) { e.alive = false; player.vy = -JUMP_FORCE*0.6; player.trust+=4; }
+          else { player.health--; player.vx = -Math.sign(e.dir||1)*200; maybeSummonSurfer(); if(player.health<=0) { gameOver=true; showMessage("Game Over",3); } }
+        }
+      });
 
-    update(dt);
-    draw();
-    requestAnimationFrame(gameLoop);
-}
+      // Check Next Level
+      if (player.x > goal.x && !boss) {
+        if (environmentIndex < ENVIRONMENTS.length - 1) {
+          player.x = 0; startEnvironment(environmentIndex + 1, { preserveStats: true });
+        } else {
+          win = true; gameOver = true; showMessage("You Won! Inclusive Innovation!", 4);
+        }
+      }
 
-function resize() {
-    const container = document.getElementById('game-container');
-    canvas.width = container.clientWidth;
-    canvas.height = container.clientHeight;
-}
+      updateParticles(dt);
+      if(player.y > HEIGHT + 40) { gameOver = true; showMessage("Game Over", 3); }
+      
+      // HUD
+      hud.innerHTML = `
+        <div><strong>${currentEnvironment.name}</strong></div>
+        <div>Health: ${"❤".repeat(player.health)} | Trust: ${player.trust} | Grapes: ${player.grapes}</div>
+        <div>Innovation: ${player.innovation} | Press 'F' to shoot</div>
+      `;
+    }
 
-window.addEventListener('resize', resize);
-resize();
-</script>
+    // Draw Loop
+    function draw() {
+      // Draw Background
+      const c = currentEnvironment.colors;
+      const g = ctx.createLinearGradient(0,0,0,HEIGHT);
+      g.addColorStop(0, c.skyTop); g.addColorStop(1, c.skyBottom);
+      ctx.fillStyle = g; ctx.fillRect(0, 0, WIDTH, HEIGHT);
+      
+      // Stars
+      ctx.fillStyle = "#fff";
+      stars.forEach(s => ctx.fillRect(s.x, s.y, s.size, s.size));
+      
+      // Ground
+      ctx.fillStyle = c.soil; ctx.fillRect(0, GROUND, WIDTH, HEIGHT-GROUND);
+      vineField.forEach(v => {
+         ctx.fillStyle = v.color;
+         for(let x=0; x<WIDTH; x+=40) ctx.fillRect(x + Math.sin(Date.now()*0.001)*5, v.y, 30, 4);
+      });
+
+      goal.draw(currentEnvironment);
+      
+      // Friends at Gate
+      gateFriends.forEach((f, idx) => {
+         const x = goal.x - 40 + f.offsetX;
+         ctx.fillStyle = f.color;
+         ctx.beginPath(); ctx.arc(x, GROUND - 90 + Math.sin(friendDancePhase+idx)*5, 12, 0, Math.PI*2); ctx.fill();
+         ctx.fillRect(x-12, GROUND-80, 24, 40);
+      });
+
+      if(boss) boss.draw();
+      if(surferHelper) surferHelper.draw();
+      obstacles.forEach(o => o.draw());
+      collectibles.forEach(i => !i.collected && i.draw());
+      enemies.forEach(e => e.draw());
+      
+      // Projectiles
+      playerProjectiles.forEach(p => { ctx.fillStyle="#ffd95b"; ctx.beginPath(); ctx.arc(p.x, p.y, 10, 0, Math.PI*2); ctx.fill(); });
+      projectiles.forEach(p => { ctx.fillStyle=p.kind==="patent"?"#f9d764":"#ff3030"; ctx.beginPath(); ctx.ellipse(p.x, p.y, p.kind==="patent"?10:6, p.kind==="patent"?6:3, 0, 0, Math.PI*2); ctx.fill(); });
+      
+      drawParticles();
+      player.draw();
+
+      if (gameOver) {
+        ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.fillRect(0, 0, WIDTH, HEIGHT);
+        ctx.fillStyle = "#fff"; ctx.font = "bold 40px 'Segoe UI'"; ctx.textAlign = "center";
+        ctx.fillText(win ? "You Won!" : "Game Over", WIDTH / 2, HEIGHT / 2);
+        ctx.font = "20px 'Segoe UI'";
+        ctx.fillText("Press R to Restart", WIDTH / 2, HEIGHT / 2 + 50);
+      }
+    }
+
+    function loop(timestamp) {
+      update(timestamp);
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    initBackdrop();
+    // Don't start game loop logic immediately, wait for click
+    requestAnimationFrame(loop);
+  </script>
 </body>
 </html>
