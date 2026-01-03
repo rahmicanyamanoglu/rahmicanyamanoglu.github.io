@@ -7,40 +7,92 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    
     <style>
-        /* Ensure header stays on top */
+        :root {
+            --paper: #f9f7f1;
+            --ink: #2b1420;
+            --accent: #8b4513;
+            --muted: #6e5e65;
+            --border: #e0d8cc;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--paper);
+            color: var(--ink);
+            font-family: 'Cormorant Garamond', serif;
+            line-height: 1.6;
+        }
+
+        /* Basic Layout Styles from V1 */
+        .container { display: flex; flex-direction: column; min-height: 100vh; }
+        
         header {
             position: sticky;
             top: 0;
             z-index: 9999;
             background: var(--paper);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-
-        /* Game Section */
-        #game-section {
-            padding: 60px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 1rem 2rem;
             border-bottom: 1px solid var(--border);
         }
 
+        .header-content {
+            max-width: 1500px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .name { font-size: 1.8rem; font-weight: 600; margin: 0; }
+        .name a { text-decoration: none; color: var(--ink); }
+        .title { font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--muted); margin-top: 2px; }
+        
+        nav a {
+            margin-left: 20px;
+            text-decoration: none;
+            color: var(--ink);
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 500;
+        }
+        nav a:hover, nav a.active { color: var(--accent); }
+
+        /* Game Section */
+        #game-section {
+            padding: 40px 20px;
+            flex: 1;
+            background: #fffbf5;
+        }
+
+        #game-section h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
         .game-description {
-            margin-bottom: 30px;
-            font-size: 1.05rem;
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 30px;
+            font-family: 'DM Sans', sans-serif;
             color: var(--muted);
         }
 
-        /* Game Container */
+        /* Game Container - The Box */
         #game-wrapper {
             position: relative;
             width: 100%;
             max-width: 1500px;
             margin: 0 auto 30px;
-            aspect-ratio: 15/6.5;
+            /* Aspect ratio matches 1500/650 */
+            aspect-ratio: 1500/650;
             background: linear-gradient(180deg, #1a0206, #050002);
-            border-radius: 24px;
-            box-shadow: 0 30px 70px rgba(240, 10, 10, 0.25);
-            border: 1px solid rgba(255, 90, 90, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(43, 20, 32, 0.2);
+            border: 4px solid #2b1420;
             overflow: hidden;
         }
 
@@ -50,33 +102,39 @@
             display: block;
         }
 
-        /* HUD */
+        /* HUD & Overlays */
         #hud {
             position: absolute;
-            top: 2%;
-            left: 2%;
-            font-size: clamp(12px, 1.5vw, 16px);
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
-            pointer-events: none;
+            top: 16px;
+            left: 24px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: clamp(14px, 1.5vw, 18px);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
             color: #f0f4ff;
+            pointer-events: none;
+            z-index: 2;
+            line-height: 1.4;
         }
 
         #message {
             position: absolute;
-            top: 50%;
+            bottom: 10%;
             left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: clamp(14px, 2vw, 20px);
+            transform: translateX(-50%);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(20px, 3vw, 32px);
+            font-weight: bold;
             color: #ffd95b;
-            background: rgba(0, 0, 0, 0.8);
+            text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+            display: none;
+            z-index: 2;
+            text-align: center;
+            background: rgba(0,0,0,0.6);
             padding: 10px 20px;
             border-radius: 8px;
-            display: none;
-            pointer-events: none;
-            z-index: 5;
         }
 
-        /* Overlays */
+        /* Dialog & Start Screens */
         #dialog-overlay, #start-overlay {
             position: absolute;
             inset: 0;
@@ -94,42 +152,31 @@
             text-align: center;
             color: #f0f4ff;
             border: 2px solid rgba(255, 150, 150, 0.3);
+            max-width: 500px;
         }
 
-        .start-box h2 {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            color: #ffd95b;
-        }
-
-        .start-box p {
-            margin: 10px 0;
-            font-size: 1.1rem;
-        }
+        .start-box h2 { font-size: 2.5rem; color: #ffd95b; margin-bottom: 20px; }
+        .start-box p { font-size: 1.2rem; margin: 10px 0; font-family: 'DM Sans', sans-serif; }
 
         button {
             margin: 10px;
-            padding: 12px 18px;
-            border-radius: 10px;
+            padding: 12px 24px;
+            border-radius: 8px;
             border: none;
             background: #ffd95b;
             color: #2b1420;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
+            font-family: 'Cormorant Garamond', serif;
             transition: transform 0.1s, background 0.2s;
         }
 
-        button:hover {
-            transform: translateY(-2px);
-            background: #ffea9e;
-        }
+        button:hover { transform: translateY(-2px); background: #ffea9e; }
 
-        .hidden {
-            display: none;
-        }
+        .hidden { display: none !important; }
 
-        /* Controls Guide */
+        /* Controls Guide below game */
         .game-controls {
             max-width: 1500px;
             margin: 0 auto;
@@ -138,35 +185,32 @@
             border: 1px solid var(--border);
             border-radius: 8px;
         }
-
-        .game-controls h3 {
-            font-family: 'DM Sans', sans-serif;
-            font-size: 1rem;
-            font-weight: 500;
-            color: var(--accent);
-            margin-bottom: 12px;
-        }
-
         .game-controls ul {
             list-style: none;
-            padding: 0;
             display: flex;
-            gap: 20px;
+            gap: 30px;
+            justify-content: center;
             flex-wrap: wrap;
+            padding: 0;
         }
-
-        .game-controls li {
-            font-size: 0.95rem;
-            color: var(--muted);
-        }
-
-        .game-controls kbd {
-            background: var(--border);
-            padding: 4px 8px;
+        .game-controls li { font-family: 'DM Sans', sans-serif; color: var(--muted); }
+        kbd {
+            background: #fff;
+            padding: 2px 6px;
+            border: 1px solid var(--border);
             border-radius: 4px;
             font-family: monospace;
             font-weight: bold;
-            color: var(--accent);
+            box-shadow: 0 2px 0 var(--border);
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            font-family: 'DM Sans', sans-serif;
+            color: var(--muted);
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -174,22 +218,15 @@
     <div class="container">
         <header>
             <div class="header-content">
-                <img src="images/profile.jpg" alt="R. Can Yamanoğlu" class="profile-photo">
                 <div>
-                    <h1 class="name"><a href="index.html" class="name-link">Rahmi <span>Can</span> Yamanoğlu</a></h1>
+                    <h1 class="name"><a href="#">Rahmi <span>Can</span> Yamanoğlu</a></h1>
                     <p class="title">PhD Candidate in Economic Geography & Regional Science</p>
-                    <p class="affiliation">
-                        <a href="https://www.gssi.it/" target="_blank">Gran Sasso Science Institute</a><br>
-                        L'Aquila, Italy
-                    </p>
                 </div>
                 <nav>
-                    <a href="index.html">About</a>
-                    <a href="research.html">Research</a>
-                    <a href="education.html">Education</a>
-                    <a href="essays.html">Essays</a>
-                    <a href="game.html" class="active">Game</a>
-                    <a href="contact.html">Contact</a>
+                    <a href="#">Home</a>
+                    <a href="#" class="active">Game</a>
+                    <a href="#">Research</a>
+                    <a href="#">Contact</a>
                 </nav>
             </div>
         </header>
@@ -197,7 +234,7 @@
         <section id="game-section">
             <h2>Wine Runner</h2>
             <div class="game-description">
-                <p>Navigate through environments representing high-trust and low-trust innovation systems. Defend trademarks, collect GI charters, and face the Patent Baron!</p>
+                <p>Navigate through innovation systems. Collect trademarks, defend against free riders, and challenge the Patent Baron.</p>
             </div>
 
             <div id="game-wrapper">
@@ -208,9 +245,9 @@
 
                 <div id="start-overlay">
                     <div class="start-box">
-                        <h2>Wine Runner</h2>
-                        <p>Use <strong>Arrow Keys</strong> to Move & Jump</p>
-                        <p>Press <strong>F</strong> to throw Trademarks</p>
+                        <h2>Inclusive Innovation</h2>
+                        <p>Use <kbd>Arrow Keys</kbd> to Move & Jump</p>
+                        <p>Press <kbd>F</kbd> to throw Trademarks</p>
                         <button id="start-btn">Click to Start Game</button>
                     </div>
                 </div>
@@ -228,12 +265,12 @@
             </div>
 
             <div class="game-controls">
-                <h3>Controls</h3>
                 <ul>
-                    <li><kbd>Arrow Keys</kbd> or <kbd>WASD</kbd> - Move & Jump</li>
-                    <li><kbd>Shift</kbd> or <kbd>Q</kbd> - Dash</li>
-                    <li><kbd>F</kbd> or <kbd>K</kbd> - Throw Trademark</li>
-                    <li><kbd>R</kbd> - Restart (when game over)</li>
+                    <li><kbd>←</kbd> <kbd>→</kbd> Move</li>
+                    <li><kbd>↑</kbd> or <kbd>Space</kbd> Jump</li>
+                    <li><kbd>Shift</kbd> Dash</li>
+                    <li><kbd>F</kbd> Throw Trademark</li>
+                    <li><kbd>R</kbd> Restart</li>
                 </ul>
             </div>
         </section>
@@ -244,6 +281,7 @@
     </div>
 
     <script>
+        // --- Game Setup & Variables ---
         const canvas = document.getElementById("game");
         const ctx = canvas.getContext("2d");
         const hud = document.getElementById("hud");
@@ -252,23 +290,13 @@
         const dialogText = document.getElementById("dialog-text");
         const dialogButtons = Array.from(document.querySelectorAll("#dialog-overlay button[data-choice]"));
         const dialogContinue = document.getElementById("dialog-continue");
-
-        // Focus handling
+        
+        // Start Logic
         const startOverlay = document.getElementById("start-overlay");
         const startBtn = document.getElementById("start-btn");
-        let gameHasFocus = false;
+        let gameActive = false;
 
-        startBtn.addEventListener("click", () => {
-            startOverlay.style.display = "none";
-            gameHasFocus = true;
-            resetGame();
-            if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
-                const AC = window.AudioContext || window.webkitAudioContext;
-                const tempCtx = new AC();
-                tempCtx.resume().then(() => tempCtx.close());
-            }
-        });
-
+        // Polyfill for roundRect
         if (!CanvasRenderingContext2D.prototype.roundRect) {
             CanvasRenderingContext2D.prototype.roundRect = function (x, y, width, height, radius) {
                 const r = typeof radius === "number" ? radius : 8;
@@ -282,6 +310,7 @@
             };
         }
 
+        // --- Constants ---
         const WIDTH = 1500;
         const HEIGHT = 650;
         const GROUND = HEIGHT - 80;
@@ -352,8 +381,10 @@
             },
         ];
 
+        // --- Game State ---
         let environmentIndex = 0;
         let currentEnvironment = ENVIRONMENTS[environmentIndex];
+        
         const VINE_ROWS = 5;
         const vineField = [];
         const stars = [];
@@ -361,32 +392,33 @@
         const projectiles = [];
         const trademarkBursts = [];
         const playerProjectiles = [];
+        
         let surferHelper = null;
         let surferRescueUsed = false;
         let surferSequenceActive = false;
         let playerHasMoved = false;
         let enemyHoldTimer = Infinity;
         let enemiesPaused = true;
+        
         let boss = null;
         let bossActive = false;
         let bossDefeated = false;
         let bossTauntQueue = [];
         let bossTauntTimer = null;
         let bossAwaitingChoice = false;
-        let bossConversationActive = false;
         let bossDialogueQueue = [];
+        let bossConversationActive = false;
+        
         let friendDancePhase = 0;
         const gateFriends = [{ offsetX: -60, color: "#ffe4e4" }, { offsetX: -30, color: "#ffd1c1" }, { offsetX: 10, color: "#ffc6d9" }];
+        
         const keys = {};
+        
+        // --- Audio ---
         let musicCtx = null;
         let musicTimer = null;
         let musicActive = false;
-
         const NOTE_FREQ = { G3: 196.00, A3: 220.00, B3: 246.94, C4: 261.63, D4: 293.66, E4: 329.63, F4: 349.23, G4: 392.00, A4: 440.00, B4: 493.88, C5: 523.25, D5: 587.33, E5: 659.25, F5: 698.46, G5: 783.99 };
-
-        dialogButtons.forEach(btn => btn.addEventListener("click", () => handleBossChoice(btn.dataset.choice)));
-        if (dialogContinue) dialogContinue.addEventListener("click", advanceBossDialogue);
-
         const musicPattern = [
             { notes: ["E4"], duration: 0.32 }, { notes: ["E4"], duration: 0.32 }, { notes: ["F4"], duration: 0.32 },
             { notes: ["G4"], duration: 0.32 }, { notes: ["G4"], duration: 0.32 }, { notes: ["F4"], duration: 0.32 },
@@ -395,13 +427,26 @@
             { notes: ["E4"], duration: 0.48 }, { notes: ["D4"], duration: 0.16 }, { notes: ["D4"], duration: 0.64 }
         ];
 
-        window.addEventListener("keydown", e => {
-            if(!gameHasFocus) return;
-            const key = e.key.toLowerCase();
+        // --- Inputs ---
+        startBtn.addEventListener("click", () => {
+            startOverlay.classList.add("hidden");
+            gameActive = true;
+            startMusic();
+            resetGame();
+        });
 
-            if(["arrowup","arrowdown","arrowleft","arrowright"," "].includes(key)) {
+        dialogButtons.forEach(btn => btn.addEventListener("click", () => handleBossChoice(btn.dataset.choice)));
+        if (dialogContinue) dialogContinue.addEventListener("click", advanceBossDialogue);
+
+        window.addEventListener("keydown", e => {
+            // Prevent page scrolling with game keys if game is focused/started
+            if(gameActive && ["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key)) {
                 e.preventDefault();
             }
+
+            if (!gameActive) return;
+
+            const key = e.key.toLowerCase();
 
             if (bossConversationActive && !bossAwaitingChoice) {
                 advanceBossDialogue();
@@ -416,11 +461,11 @@
             if (key === "r" && gameOver) resetGame();
             if (key === "f" || key === "k") attemptTrademarkThrow();
             if (["arrowleft","arrowright","a","d","w","s","arrowup","arrowdown"," ","shift","q"].includes(key)) registerPlayerMovement();
-            if (!musicActive && ["arrowup","arrowdown","arrowleft","arrowright","w","a","s","d"].includes(key)) startMusic();
         });
 
         window.addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; });
 
+        // --- Helpers ---
         function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
         function rand(min, max) { return Math.random() * (max - min) + min; }
 
@@ -433,6 +478,7 @@
             }
         }
 
+        // --- Classes ---
         class Player {
             constructor() { this.reset(); }
             reset() {
@@ -470,14 +516,12 @@
             }
             draw() {
                 ctx.save();
-                ctx.fillStyle = "#ffd95b";
-                ctx.beginPath();
-                ctx.roundRect(this.x, this.y + 14, this.width, this.height - 14, 8);
-                ctx.fill();
-                ctx.fillStyle = "#f4e3c3";
-                ctx.beginPath();
-                ctx.arc(this.x + this.width / 2, this.y + 14, 10, 0, Math.PI * 2);
-                ctx.fill();
+                const bodyGrad = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
+                bodyGrad.addColorStop(0, "#9ce9ff"); bodyGrad.addColorStop(1, "#419ad8");
+                ctx.fillStyle = bodyGrad;
+                ctx.beginPath(); ctx.roundRect(this.x, this.y, this.width, this.height, 10); ctx.fill();
+                ctx.fillStyle = "#ffd7a8";
+                ctx.beginPath(); ctx.arc(this.x + this.width / 2, this.y - 6, 10, 0, Math.PI * 2); ctx.fill();
                 ctx.restore();
             }
         }
@@ -628,14 +672,6 @@
             }
         }
 
-        function maybeSummonSurfer() {
-            if (surferRescueUsed || surferHelper) return;
-            if (player.health === 1 && !gameOver) {
-                surferHelper = new SurferHelper(player); surferSequenceActive = true;
-                showMessage("A surfer ally is rushing to help!", 1.5);
-            }
-        }
-
         class Goal {
             constructor(x) { this.x = x; this.width = 28; this.height = 96; }
             draw(environment) {
@@ -650,6 +686,7 @@
             }
         }
 
+        // --- Collision & Logic Helpers ---
         function rectsOverlap(a, b) {
             return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
         }
@@ -658,7 +695,15 @@
             const dy = player.y + player.height / 2 - collectible.y;
             return Math.hypot(dx, dy) < collectible.radius + Math.max(player.width, player.height) / 2;
         }
+        function maybeSummonSurfer() {
+            if (surferRescueUsed || surferHelper) return;
+            if (player.health === 1 && !gameOver) {
+                surferHelper = new SurferHelper(player); surferSequenceActive = true;
+                showMessage("A surfer ally is rushing to help!", 1.5);
+            }
+        }
 
+        // --- Setup Definitions ---
         const baseCollectibleDefs = [
             { x: 280, y: GROUND - 60, spec: { type: "gi", color: "#91e0c0", label: "GI Charter" } },
             { x: 520, y: GROUND - 90, spec: { type: "ctm", color: "#f5c37c", label: "CTM Sprint" } },
@@ -716,6 +761,7 @@
             if (text && duration > 0) messageTimeout = setTimeout(() => { message.style.display = "none"; }, duration * 1000);
         }
 
+        // --- Audio Logic ---
         function startMusic() {
             if (musicActive) return;
             const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -745,6 +791,7 @@
             playNote();
         }
 
+        // --- Core Game Functions ---
         function startEnvironment(index, { preserveStats = false, showIntro = true } = {}) {
             environmentIndex = index;
             currentEnvironment = ENVIRONMENTS[environmentIndex];
@@ -766,7 +813,16 @@
                 beginBossDialogue(["Patent Baron: \"I've reviewed every trademark.\"", "Patent Baron: \"None rival a patent.\"", "You: \"Innovation thrives when shared.\""]);
             } else {
                 boss = null;
+                dialogOverlay.classList.add("hidden");
             }
+            
+            // Add Mega Enemy random chance
+            if (!currentEnvironment.bossConfig && Math.random() < 0.45) {
+                const mega = new Enemy(rand(200, WIDTH - 200), 140, 110);
+                mega.width = 80; mega.height = 110; mega.y = GROUND - mega.height;
+                enemies.push(mega);
+            }
+
             if (!preserveStats) player.reset();
             else {
                 player.x = 140; player.y = GROUND - player.height;
@@ -815,7 +871,8 @@
         function beginBossDialogue(lines) {
             bossConversationActive = true; bossDialogueQueue = [...lines]; bossAwaitingChoice = false;
             if (!bossDialogueQueue.length) { showBossChoicePrompt(); return; }
-            dialogOverlay.style.display = "flex"; dialogText.innerHTML = bossDialogueQueue[0];
+            dialogOverlay.classList.remove("hidden");
+            dialogText.innerHTML = bossDialogueQueue[0];
             dialogContinue.style.display = "inline-block"; dialogButtons.forEach(b => b.style.display = "none");
         }
         function advanceBossDialogue() {
@@ -825,7 +882,7 @@
             dialogText.innerHTML = bossDialogueQueue[0];
         }
         function showBossChoicePrompt() {
-            bossAwaitingChoice = true; dialogOverlay.style.display = "flex";
+            bossAwaitingChoice = true; dialogOverlay.classList.remove("hidden");
             dialogText.innerHTML = `Patent Baron:<br>"Pick your metric for innovation."`;
             dialogButtons.forEach(b => b.style.display = "inline-block");
             dialogContinue.style.display = "none";
@@ -836,7 +893,7 @@
                 dialogText.innerHTML = `Patent Baron smirks:<br>"Exactly. Patents are innovation."`;
                 showMessage("He refuses to fight.", 2.4); return;
             }
-            bossAwaitingChoice = false; dialogOverlay.style.display = "none";
+            bossAwaitingChoice = false; dialogOverlay.classList.add("hidden");
             showMessage(`You: "Trademarks capture innovation!"`, 2.5);
             setTimeout(() => startBossTaunts(currentEnvironment.bossConfig?.taunts || []), 1200);
         }
@@ -854,24 +911,22 @@
             projectiles.push({ x: enemy.x + enemy.width/2, y: enemy.y + enemy.height/2, vx: dir * rand(260, 360), vy: rand(-40, 40), life: 2.5, kind: "enemy" });
         }
 
+        // --- Main Loop ---
         function update(timestamp) {
             if (lastTime === 0) lastTime = timestamp;
             let dt = Math.min((timestamp - lastTime) / 1000, 0.016);
             lastTime = timestamp;
             friendDancePhase += dt * 6;
 
-            if(!gameHasFocus) {
-                requestAnimationFrame(loop);
+            if(!gameActive) {
+                // Game paused or waiting start
                 return;
             }
 
             if (playerHasMoved && enemiesPaused && Number.isFinite(enemyHoldTimer)) {
                 enemyHoldTimer -= dt; if (enemyHoldTimer <= 0) { enemiesPaused = false; enemyHoldTimer = null; }
             }
-            if (gameOver) {
-                requestAnimationFrame(loop);
-                return;
-            }
+            if (gameOver) return;
 
             player.update(dt);
 
@@ -915,108 +970,19 @@
             for (let i = playerProjectiles.length - 1; i >= 0; i--) {
                 const s = playerProjectiles[i]; s.life -= dt; s.x += s.vx * dt;
                 if (s.life <= 0) { playerProjectiles.splice(i, 1); continue; }
+                
+                // Obstacle collision for projectiles
+                let hitObstacle = false;
+                for(let o of obstacles) {
+                    if(rectsOverlap({x:s.x-10,y:s.y-10,width:20,height:20}, {x:o.x, y:GROUND-o.height, width:o.width, height:o.height})) {
+                        playerProjectiles.splice(i, 1); hitObstacle = true; break;
+                    }
+                }
+                if(hitObstacle) continue;
+
                 let hit = false;
                 enemies.forEach(e => {
                     if(e.alive && rectsOverlap({x:s.x-10,y:s.y-10,width:20,height:20}, e)) {
                         e.alive = false; playerProjectiles.splice(i, 1); hit = true;
                         player.trust += 2; spawnParticles(e.x+e.width/2, e.y, "#ffd95b");
-                    }
-                });
-                if(hit) continue;
-                if(boss && bossActive && boss.isAlive() && rectsOverlap({x:s.x-10,y:s.y-10,width:20,height:20}, boss.getRect())) {
-                    playerProjectiles.splice(i, 1);
-                    if(boss.takeDamage(1)) { bossDefeated = true; bossActive = false; win=true; gameOver=true; showMessage("Patent Baron Defeated!", 4); }
-                    spawnParticles(boss.x+boss.width/2, boss.y+boss.height/2, "#ffd95b");
-                }
-            }
-
-            for (let i = projectiles.length - 1; i >= 0; i--) {
-                const p = projectiles[i]; p.life -= dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 120 * dt;
-                if (p.life <= 0) { projectiles.splice(i, 1); continue; }
-                if (rectsOverlap({x:p.x-6,y:p.y-6,width:12,height:12}, player)) {
-                    projectiles.splice(i, 1); player.health--; maybeSummonSurfer();
-                    if (player.health <= 0) { gameOver = true; showMessage("Game Over", 3); }
-                }
-            }
-
-            enemies.forEach(e => {
-                if(e.alive && rectsOverlap(player, e)) {
-                    if(player.vy > 0) { e.alive = false; player.vy = -JUMP_FORCE*0.6; player.trust+=4; }
-                    else { player.health--; player.vx = -Math.sign(e.dir||1)*200; maybeSummonSurfer(); if(player.health<=0) { gameOver=true; showMessage("Game Over",3); } }
-                }
-            });
-
-            if (player.x > goal.x && !boss) {
-                if (environmentIndex < ENVIRONMENTS.length - 1) {
-                    player.x = 0; startEnvironment(environmentIndex + 1, { preserveStats: true });
-                } else {
-                    win = true; gameOver = true; showMessage("You Won! Inclusive Innovation!", 4);
-                }
-            }
-
-            updateParticles(dt);
-            if(player.y > HEIGHT + 40) { gameOver = true; showMessage("Game Over", 3); }
-
-            hud.innerHTML = `
-                <div><strong>${currentEnvironment.name}</strong></div>
-                <div>Health: ${"❤".repeat(player.health)} | Trust: ${player.trust} | Grapes: ${player.grapes}</div>
-                <div>Innovation: ${player.innovation} | Press 'F' to shoot</div>
-            `;
-        }
-
-        function draw() {
-            const c = currentEnvironment.colors;
-            const g = ctx.createLinearGradient(0,0,0,HEIGHT);
-            g.addColorStop(0, c.skyTop); g.addColorStop(1, c.skyBottom);
-            ctx.fillStyle = g; ctx.fillRect(0, 0, WIDTH, HEIGHT);
-
-            ctx.fillStyle = "#fff";
-            stars.forEach(s => ctx.fillRect(s.x, s.y, s.size, s.size));
-
-            ctx.fillStyle = c.soil; ctx.fillRect(0, GROUND, WIDTH, HEIGHT-GROUND);
-            vineField.forEach(v => {
-                ctx.fillStyle = v.color;
-                for(let x=0; x<WIDTH; x+=40) ctx.fillRect(x + Math.sin(Date.now()*0.001)*5, v.y, 30, 4);
-            });
-
-            goal.draw(currentEnvironment);
-
-            gateFriends.forEach((f, idx) => {
-                const x = goal.x - 40 + f.offsetX;
-                ctx.fillStyle = f.color;
-                ctx.beginPath(); ctx.arc(x, GROUND - 90 + Math.sin(friendDancePhase+idx)*5, 12, 0, Math.PI*2); ctx.fill();
-                ctx.fillRect(x-12, GROUND-80, 24, 40);
-            });
-
-            if(boss) boss.draw();
-            if(surferHelper) surferHelper.draw();
-            obstacles.forEach(o => o.draw());
-            collectibles.forEach(i => !i.collected && i.draw());
-            enemies.forEach(e => e.draw());
-
-            playerProjectiles.forEach(p => { ctx.fillStyle="#ffd95b"; ctx.beginPath(); ctx.arc(p.x, p.y, 10, 0, Math.PI*2); ctx.fill(); });
-            projectiles.forEach(p => { ctx.fillStyle=p.kind==="patent"?"#f9d764":"#ff3030"; ctx.beginPath(); ctx.ellipse(p.x, p.y, p.kind==="patent"?10:6, p.kind==="patent"?6:3, 0, 0, Math.PI*2); ctx.fill(); });
-
-            drawParticles();
-            player.draw();
-
-            if (gameOver) {
-                ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.fillRect(0, 0, WIDTH, HEIGHT);
-                ctx.fillStyle = "#fff"; ctx.font = "bold 40px 'Segoe UI'"; ctx.textAlign = "center";
-                ctx.fillText(win ? "You Won!" : "Game Over", WIDTH / 2, HEIGHT / 2);
-                ctx.font = "20px 'Segoe UI'";
-                ctx.fillText("Press R to Restart", WIDTH / 2, HEIGHT / 2 + 50);
-            }
-        }
-
-        function loop(timestamp) {
-            update(timestamp);
-            draw();
-            requestAnimationFrame(loop);
-        }
-
-        initBackdrop();
-        requestAnimationFrame(loop);
-    </script>
-</body>
-</html>
+                        trademarkBursts
