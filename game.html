@@ -26,7 +26,7 @@
             line-height: 1.6;
         }
 
-        /* Basic Layout Styles from V1 */
+        /* V1 Layout Styles */
         .container { display: flex; flex-direction: column; min-height: 100vh; }
         
         header {
@@ -81,14 +81,13 @@
             color: var(--muted);
         }
 
-        /* Game Container - The Box */
+        /* Game Container */
         #game-wrapper {
             position: relative;
             width: 100%;
             max-width: 1500px;
             margin: 0 auto 30px;
-            /* Aspect ratio matches 1500/650 */
-            aspect-ratio: 1500/650;
+            aspect-ratio: 1500/650; /* Keeps the aspect ratio consistent */
             background: linear-gradient(180deg, #1a0206, #050002);
             border-radius: 12px;
             box-shadow: 0 20px 50px rgba(43, 20, 32, 0.2);
@@ -176,7 +175,7 @@
 
         .hidden { display: none !important; }
 
-        /* Controls Guide below game */
+        /* Controls Guide */
         .game-controls {
             max-width: 1500px;
             margin: 0 auto;
@@ -985,4 +984,145 @@
                     if(e.alive && rectsOverlap({x:s.x-10,y:s.y-10,width:20,height:20}, e)) {
                         e.alive = false; playerProjectiles.splice(i, 1); hit = true;
                         player.trust += 2; spawnParticles(e.x+e.width/2, e.y, "#ffd95b");
-                        trademarkBursts
+                        trademarkBursts.push({x:e.x+e.width/2, y:e.y, vy:-80, life:0.9});
+                    }
+                });
+                if(hit) continue;
+                if(boss && bossActive && boss.isAlive() && rectsOverlap({x:s.x-10,y:s.y-10,width:20,height:20}, boss.getRect())) {
+                    playerProjectiles.splice(i, 1);
+                    if(boss.takeDamage(1)) { 
+                        bossDefeated = true; bossActive = false; win=true; gameOver=true; 
+                        showMessage("Patent Baron Defeated! Inclusive Innovation!", 4); 
+                    } else {
+                        showMessage("Trademark Strike!", 0.8);
+                    }
+                    spawnParticles(boss.x+boss.width/2, boss.y+boss.height/2, "#ffd95b");
+                }
+            }
+
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                const p = projectiles[i]; p.life -= dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 120 * dt;
+                if (p.life <= 0) { projectiles.splice(i, 1); continue; }
+                if (rectsOverlap({x:p.x-6,y:p.y-6,width:12,height:12}, player)) {
+                    projectiles.splice(i, 1); player.health--; maybeSummonSurfer();
+                    if (player.health <= 0) { gameOver = true; showMessage("Game Over", 3); }
+                }
+            }
+            
+            // Burst update
+            for(let i=trademarkBursts.length-1; i>=0; i--) {
+                let t = trademarkBursts[i]; t.life -= dt; t.y += t.vy * dt; t.vy -= 30*dt;
+                if(t.life <= 0) trademarkBursts.splice(i, 1);
+            }
+
+            enemies.forEach(e => {
+                if(e.alive && rectsOverlap(player, e)) {
+                    if(player.vy > 0) { e.alive = false; player.vy = -JUMP_FORCE*0.6; player.trust+=4; }
+                    else { player.health--; player.vx = -Math.sign(e.dir||1)*200; maybeSummonSurfer(); if(player.health<=0) { gameOver=true; showMessage("Game Over",3); } }
+                }
+            });
+
+            if(boss && bossActive && boss.isAlive() && rectsOverlap(player, boss.getRect())) {
+                 player.health--; player.vx = -220; maybeSummonSurfer();
+                 if(player.health<=0) { gameOver=true; showMessage("Game Over",3); }
+            }
+
+            if (player.x > goal.x && !boss) {
+                if (environmentIndex < ENVIRONMENTS.length - 1) {
+                    player.x = 0; startEnvironment(environmentIndex + 1, { preserveStats: true });
+                } else {
+                    win = true; gameOver = true; showMessage("You Won! Inclusive Innovation!", 4);
+                }
+            }
+
+            updateParticles(dt);
+            if(player.y > HEIGHT + 40) { gameOver = true; showMessage("Game Over", 3); }
+
+            // HUD
+            const trustIcon = player.trust >= 20 ? "🤝" : "🤔";
+            hud.innerHTML = `
+                <div><strong>${currentEnvironment.name}</strong></div>
+                <div>Health: ${"❤".repeat(player.health)} | Trust ${trustIcon}: ${player.trust} | Wines: ${player.grapes}</div>
+                <div>GI: ${player.giCharters} | CTM: ${player.ctmCharters} | TM: ${player.trademarks}</div>
+            `;
+            if (boss && boss.isAlive()) {
+               hud.innerHTML += `<div>Patent Baron Health: ${boss.health}/${boss.maxHealth}</div>`;
+            }
+        }
+
+        function draw() {
+            // Draw Background
+            const c = currentEnvironment.colors;
+            const g = ctx.createLinearGradient(0,0,0,HEIGHT);
+            g.addColorStop(0, c.skyTop); g.addColorStop(1, c.skyBottom);
+            ctx.fillStyle = g; ctx.fillRect(0, 0, WIDTH, HEIGHT);
+            ctx.fillStyle = "#fff"; stars.forEach(s => ctx.fillRect(s.x, s.y, s.size, s.size));
+            
+            // Hills
+            ctx.fillStyle = c.hill || "#0b1e36";
+            ctx.beginPath();
+            ctx.moveTo(0, GROUND - 60);
+            ctx.quadraticCurveTo(WIDTH * 0.3, GROUND - 110, WIDTH * 0.6, GROUND - 40);
+            ctx.quadraticCurveTo(WIDTH * 0.85, GROUND, WIDTH, GROUND - 30);
+            ctx.lineTo(WIDTH, HEIGHT); ctx.lineTo(0, HEIGHT); ctx.fill();
+
+            // Soil
+            ctx.fillStyle = c.soil; ctx.fillRect(0, GROUND, WIDTH, HEIGHT-GROUND);
+            vineField.forEach((v, idx) => {
+                ctx.fillStyle = v.color;
+                const sway = Math.sin(Date.now()*0.001 + idx) * v.sway;
+                for(let x=0; x<WIDTH; x+=40) ctx.fillRect(x + sway*5, v.y, 30, 4);
+            });
+
+            goal.draw(currentEnvironment);
+
+            gateFriends.forEach((f, idx) => {
+                const x = goal.x - 40 + f.offsetX;
+                ctx.fillStyle = f.color;
+                ctx.beginPath(); ctx.arc(x, GROUND - 90 + Math.sin(friendDancePhase+idx)*5, 12, 0, Math.PI*2); ctx.fill();
+                ctx.fillRect(x-12, GROUND-80, 24, 40);
+            });
+
+            if(boss) boss.draw();
+            if(surferHelper) surferHelper.draw();
+            obstacles.forEach(o => o.draw());
+            collectibles.forEach(i => !i.collected && i.draw());
+            enemies.forEach(e => e.draw());
+
+            // Projectiles
+            playerProjectiles.forEach(p => { 
+                ctx.save(); ctx.fillStyle="#ffd95b"; ctx.beginPath(); ctx.arc(p.x, p.y, 10, 0, Math.PI*2); ctx.fill(); 
+                ctx.fillStyle="#3a1f04"; ctx.font="bold 10px sans-serif"; ctx.textAlign="center"; ctx.fillText("TM", p.x, p.y+4); ctx.restore();
+            });
+            projectiles.forEach(p => { ctx.fillStyle=p.kind==="patent"?"#f9d764":"#ff3030"; ctx.beginPath(); ctx.ellipse(p.x, p.y, p.kind==="patent"?10:6, p.kind==="patent"?6:3, 0, 0, Math.PI*2); ctx.fill(); });
+
+            // Trademark bursts
+            ctx.fillStyle = "#ffd95b";
+            trademarkBursts.forEach(t => { ctx.globalAlpha = Math.max(0, t.life); ctx.beginPath(); ctx.arc(t.x, t.y, 8, 0, Math.PI * 2); ctx.fill(); ctx.globalAlpha=1; });
+
+            drawParticles();
+            player.draw();
+
+            if (gameOver) {
+                ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.fillRect(0, 0, WIDTH, HEIGHT);
+                ctx.fillStyle = "#fff"; ctx.font = "bold 40px 'Cormorant Garamond'"; ctx.textAlign = "center";
+                ctx.fillText(win ? "Inclusive Innovation Triggered!" : "Game Over", WIDTH / 2, HEIGHT / 2);
+                ctx.font = "24px 'DM Sans'";
+                ctx.fillText("Press R to Restart", WIDTH / 2, HEIGHT / 2 + 50);
+            }
+        }
+
+        function loop(timestamp) {
+            update(timestamp);
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        initBackdrop();
+        // Initial render before start
+        startEnvironment(0);
+        draw(); 
+        requestAnimationFrame(loop);
+    </script>
+</body>
+</html>
