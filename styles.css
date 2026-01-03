@@ -464,3 +464,122 @@ section:nth-child(2) { animation-delay: 0.1s; }
 section:nth-child(3) { animation-delay: 0.2s; }
 section:nth-child(4) { animation-delay: 0.3s; }
 section:nth-child(5) { animation-delay: 0.4s; }
+
+/* Essays & Critiques Section */
+.intro-text {
+    font-size: 1.05rem;
+    max-width: 750px;
+    margin-bottom: 40px;
+    color: var(--muted);
+}
+
+.intro-text a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+}
+
+.intro-text a:hover {
+    border-color: var(--accent);
+}
+
+.essay-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.essay-card {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--border);
+    padding: 24px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.essay-card:hover {
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px rgba(139, 69, 19, 0.1);
+    transform: translateY(-2px);
+}
+
+.card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.pub-tag {
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-radius: 3px;
+}
+
+.pub-tag.k24 {
+    background: #4a5568;
+    color: #fff;
+}
+
+.pub-tag.manifold {
+    background: var(--accent);
+    color: #fff;
+}
+
+.pub-date {
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.essay-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 500;
+    line-height: 1.4;
+    margin-bottom: 12px;
+}
+
+.essay-title a {
+    color: var(--ink);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.essay-title a:hover {
+    color: var(--accent);
+}
+
+.essay-excerpt {
+    font-size: 0.95rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 16px;
+    font-style: italic;
+}
+
+.read-link {
+    display: inline-block;
+    font-size: 0.9rem;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.read-link:hover {
+    color: var(--ink);
+    transform: translateX(4px);
+}
+
+@media (max-width: 700px) {
+    .essay-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+}
