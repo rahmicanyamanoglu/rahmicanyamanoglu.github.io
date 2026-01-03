@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wine Runner | R. Can Yamanoğlu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Game-specific styles */
+        #game-section {
+            padding: 60px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            height: 600px;
+            background: radial-gradient(circle at center, #220011 0%, #000000 100%);
+            border: 2px solid var(--border);
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .hud-top {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-box {
+            background: rgba(0, 255, 255, 0.1);
+            border: 2px solid #00ffcc;
+            padding: 10px 20px;
+            color: #00ffcc;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: bold;
+            text-transform: uppercase;
+            box-shadow: 0 0 15px #00ffcc;
+        }
+
+        .screen {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            z-index: 100;
+            transition: opacity 0.3s;
+        }
+
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .game-title {
+            font-size: 60px;
+            color: #fff;
+            font-family: 'Rajdhani', sans-serif;
+            text-shadow: 0 0 20px #ff0055;
+            margin: 0;
+            font-style: italic;
+        }
+
+        .game-button {
+            margin-top: 40px;
+            padding: 20px 60px;
+            font-size: 24px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 900;
+            color: #000;
+            background: #ff0055;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 0 30px #ff0055;
+            transition: transform 0.2s;
+        }
+
+        .game-button:hover {
+            transform: scale(1.1);
+            background: #fff;
+        }
+
+        .game-description {
+            color: var(--muted);
+            font-size: 1.05rem;
+            max-width: 750px;
+            margin-bottom: 30px;
+        }
+
+        .game-controls {
+            background: rgba(139, 69, 19, 0.1);
+            border: 1px solid var(--border);
+            padding: 20px;
+            margin-top: 30px;
+            max-width: 750px;
+        }
+
+        .game-controls h3 {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 15px;
+        }
+
+        .game-controls ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .game-controls li {
+            padding: 5px 0;
+            color: var(--muted);
+        }
+
+        .game-controls kbd {
+            background: var(--accent);
+            color: var(--paper);
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        @media (max-width: 700px) {
+            #game-container {
+                height: 400px;
+            }
+            .game-title {
+                font-size: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <img src="images/profile.jpg" alt="R. Can Yamanoğlu" class="profile-photo">
+                <div>
+                    <h1 class="name"><a href="index.html" class="name-link">Rahmi <span>Can</span> Yamanoğlu</a></h1>
+                    <p class="title">PhD Candidate in Economic Geography & Regional Science</p>
+                    <p class="affiliation">
+                        <a href="https://www.gssi.it/" target="_blank">Gran Sasso Science Institute</a><br>
+                        L'Aquila, Italy
+                    </p>
+                </div>
+                <nav>
+                    <a href="index.html">About</a>
+                    <a href="research.html">Research</a>
+                    <a href="education.html">Education</a>
+                    <a href="game.html" class="active">Game</a>
+                    <a href="contact.html">Contact</a>
+                </nav>
+            </div>
+        </header>
+
+        <section id="game-section">
+            <h2>Wine Runner</h2>
+            <div class="game-description">
+                <p>A retro-style endless runner game inspired by wine research. Navigate obstacles and see how far you can run!</p>
+            </div>
+
+            <div id="game-container">
+                <canvas id="gameCanvas"></canvas>
+
+                <div id="ui-layer">
+                    <div class="hud-top">
+                        <div class="stat-box">HP: <span id="hp-val">100</span>%</div>
+                        <div class="stat-box">SCORE: <span id="score-val">0</span></div>
+                    </div>
+                </div>
+
+                <div id="start-screen" class="screen">
+                    <h1 class="game-title">WINE RUNNER</h1>
+                    <p style="color:#aaa; font-size:24px; font-family: 'Rajdhani', sans-serif;">PRESS BUTTON TO INITIALIZE</p>
+                    <button class="game-button" onclick="initGame()">START RUN</button>
+                </div>
+
+                <div id="game-over-screen" class="screen hidden">
+                    <h1 class="game-title" style="color: #ff0000;">CRASHED</h1>
+                    <button class="game-button" onclick="resetGame()">RETRY</button>
+                </div>
+            </div>
+
+            <div class="game-controls">
+                <h3>Controls</h3>
+                <ul>
+                    <li><kbd>W</kbd> / <kbd>↑</kbd> / <kbd>SPACE</kbd> Jump</li>
+                    <li><kbd>A</kbd> / <kbd>←</kbd> Move Left</li>
+                    <li><kbd>D</kbd> / <kbd>→</kbd> Move Right</li>
+                </ul>
+            </div>
+        </section>
+
+        <footer>
+            <p>© 2025 R. Can Yamanoğlu</p>
+        </footer>
+    </div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+// --- AUDIO SYNTHESIZER ---
+const AudioEngine = {
+    ctx: null,
+    isPlaying: false,
+
+    init: function() {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        this.ctx = new AC();
+    },
+
+    playTone: function(freq, type='square', dur=0.1) {
+        if(!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + dur);
+        osc.start();
+        osc.stop(this.ctx.currentTime + dur);
+    },
+
+    startMusic: function() {
+        if(this.isPlaying) return;
+        this.isPlaying = true;
+        let idx = 0;
+        const notes = [110, 110, 110, 130, 146, 146, 130, 110];
+
+        const loop = () => {
+            if(!this.isPlaying) return;
+            this.playTone(notes[idx], 'sawtooth', 0.15);
+            idx = (idx + 1) % notes.length;
+            setTimeout(loop, 150);
+        };
+        loop();
+    }
+};
+
+// --- CONFIG ---
+const GRAVITY = 2000;
+const JUMP_FORCE = 900;
+const GROUND_OFFSET = 100;
+
+// --- GAME STATE ---
+let gameState = {
+    active: false,
+    cameraX: 0,
+    score: 0,
+    frame: 0
+};
+
+const keys = { up:false, left:false, right:false, space:false };
+
+window.addEventListener('keydown', e => {
+    if(e.key === 'w' || e.key === 'ArrowUp' || e.key === ' ') keys.up = true;
+    if(e.key === 'd' || e.key === 'ArrowRight') keys.right = true;
+    if(e.key === 'a' || e.key === 'ArrowLeft') keys.left = true;
+});
+
+window.addEventListener('keyup', e => {
+    if(e.key === 'w' || e.key === 'ArrowUp' || e.key === ' ') keys.up = false;
+    if(e.key === 'd' || e.key === 'ArrowRight') keys.right = false;
+    if(e.key === 'a' || e.key === 'ArrowLeft') keys.left = false;
+});
+
+// --- CLASSES ---
+class Player {
+    constructor() {
+        this.w = 40;
+        this.h = 70;
+        this.x = 100;
+        this.y = 0;
+        this.vx = 0;
+        this.vy = 0;
+        this.hp = 100;
+        this.onGround = false;
+        this.color = '#FFFF00';
+    }
+
+    update(dt) {
+        const groundY = canvas.height - GROUND_OFFSET - this.h;
+
+        if(keys.right) this.vx += 2000 * dt;
+        else if(keys.left) this.vx -= 2000 * dt;
+        else this.vx *= 0.85;
+
+        this.vx = Math.max(-800, Math.min(800, this.vx));
+        this.vy += GRAVITY * dt;
+        this.y += this.vy * dt;
+
+        if(this.y >= groundY) {
+            this.y = groundY;
+            this.vy = 0;
+            this.onGround = true;
+        } else {
+            this.onGround = false;
+        }
+
+        if(keys.up && this.onGround) {
+            this.vy = -JUMP_FORCE;
+            this.onGround = false;
+            AudioEngine.playTone(300, 'square', 0.2);
+        }
+
+        this.x += this.vx * dt;
+        if(this.x < 0) this.x = 0;
+    }
+
+    draw() {
+        const screenX = this.x - gameState.cameraX;
+        const screenY = this.y;
+
+        ctx.save();
+
+        ctx.fillStyle = 'rgba(0,0,0,0.5)';
+        ctx.beginPath();
+        ctx.ellipse(screenX + this.w/2, screenY + this.h, 20, 5, 0, 0, Math.PI*2);
+        ctx.fill();
+
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 20;
+        ctx.fillRect(screenX, screenY, this.w, this.h);
+        ctx.shadowBlur = 0;
+
+        ctx.fillStyle = '#000';
+        if(this.vx >= 0) {
+            ctx.fillRect(screenX + 25, screenY + 15, 15, 8);
+        } else {
+            ctx.fillRect(screenX, screenY + 15, 15, 8);
+        }
+
+        if(Math.abs(this.vx) > 400) {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.ellipse(screenX + 20, screenY + 70, 40, 8, 0, 0, Math.PI*2);
+            ctx.fill();
+        }
+
+        ctx.restore();
+    }
+}
+
+class Boss {
+    constructor() {
+        this.active = false;
+        this.x = 0;
+        this.y = 0;
+        this.w = 120;
+        this.h = 160;
+        this.hp = 1000;
+    }
+
+    update(dt) {
+        if(!this.active) {
+            if(player.x > 5000) {
+                this.active = true;
+                this.hp = 1000;
+            }
+            return;
+        }
+
+        this.x = gameState.cameraX + canvas.width - 200;
+        this.y = canvas.height - GROUND_OFFSET - 200 + Math.sin(Date.now()/500)*30;
+    }
+
+    draw() {
+        if(!this.active) return;
+        const screenX = this.x - gameState.cameraX;
+
+        ctx.fillStyle = '#550055';
+        ctx.shadowColor = '#ff00ff';
+        ctx.shadowBlur = 30;
+        ctx.fillRect(screenX, this.y, this.w, this.h);
+
+        ctx.fillStyle = '#ff0000';
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#ff0000';
+        ctx.beginPath();
+        ctx.arc(screenX + 30, this.y + 50, 10, 0, Math.PI*2);
+        ctx.arc(screenX + 90, this.y + 50, 10, 0, Math.PI*2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+    }
+}
+
+let player = new Player();
+let boss = new Boss();
+let obstacles = [];
+
+function spawnLevel() {
+    obstacles = [];
+    for(let i=1; i<50; i++) {
+        obstacles.push({
+            x: i * 600 + Math.random()*300,
+            y: canvas.height - GROUND_OFFSET - 50,
+            w: 50,
+            h: 50,
+            active: true
+        });
+    }
+}
+
+function initGame() {
+    AudioEngine.init();
+    AudioEngine.startMusic();
+    document.getElementById('start-screen').classList.add('hidden');
+    resetGame();
+}
+
+function resetGame() {
+    resize();
+    player = new Player();
+    boss = new Boss();
+    spawnLevel();
+    gameState = { active: true, cameraX: 0, score: 0, frame: 0 };
+    document.getElementById('game-over-screen').classList.add('hidden');
+    gameLoop();
+}
+
+function update(dt) {
+    if(!gameState.active) return;
+
+    player.update(dt);
+    boss.update(dt);
+
+    let targetCamX = player.x - canvas.width * 0.2;
+    if(targetCamX < 0) targetCamX = 0;
+    gameState.cameraX += (targetCamX - gameState.cameraX) * 5 * dt;
+
+    obstacles.forEach(obs => {
+        if(!obs.active) return;
+        if(player.x < obs.x + obs.w && player.x + player.w > obs.x &&
+           player.y < obs.y + obs.h && player.y + player.h > obs.y) {
+             player.hp -= 10;
+             obs.active = false;
+             AudioEngine.playTone(100, 'sawtooth', 0.3);
+             if(player.hp <= 0) {
+                 gameState.active = false;
+                 document.getElementById('game-over-screen').classList.remove('hidden');
+             }
+        }
+    });
+
+    document.getElementById('hp-val').innerText = Math.floor(player.hp);
+    document.getElementById('score-val').innerText = Math.floor(player.x / 10);
+}
+
+function draw() {
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.save();
+    ctx.translate(-gameState.cameraX * 0.5, 0);
+    ctx.strokeStyle = 'rgba(255, 0, 85, 0.3)';
+    ctx.lineWidth = 2;
+    for(let i=0; i<canvas.width + gameState.cameraX + 1000; i+=100) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i, canvas.height);
+        ctx.stroke();
+    }
+    ctx.restore();
+
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillRect(0, canvas.height - GROUND_OFFSET, canvas.width, GROUND_OFFSET);
+    ctx.fillStyle = '#ff0055';
+    ctx.fillRect(0, canvas.height - GROUND_OFFSET, canvas.width, 4);
+
+    ctx.fillStyle = '#888';
+    obstacles.forEach(obs => {
+        if(!obs.active) return;
+        let sx = obs.x - gameState.cameraX;
+        if(sx > -100 && sx < canvas.width) {
+            ctx.fillRect(sx, obs.y, obs.w, obs.h);
+        }
+    });
+
+    boss.draw();
+    player.draw();
+}
+
+let lastTime = 0;
+function gameLoop(timestamp) {
+    if(!gameState.active) return;
+    const dt = Math.min((timestamp - lastTime) / 1000, 0.1);
+    lastTime = timestamp;
+
+    update(dt);
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+function resize() {
+    const container = document.getElementById('game-container');
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientHeight;
+}
+
+window.addEventListener('resize', resize);
+resize();
+</script>
+</body>
+</html>
