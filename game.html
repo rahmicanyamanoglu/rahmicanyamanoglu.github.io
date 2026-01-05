@@ -234,7 +234,7 @@
         <section id="game-section">
             <h2>Wine Runner</h2>
             <div class="game-description">
-                <p>Navigate through innovation systems. Collect trademarks, defend against free riders, and challenge the Patent Baron.</p>
+                <p>Navigate through innovation systems. Collect trademarks, defend against free riders, and challenge the Freerider Boss.</p>
             </div>
 
             <div id="game-wrapper">
@@ -254,10 +254,10 @@
 
                 <div id="dialog-overlay" class="hidden">
                     <div class="dialog-box">
-                        <p id="dialog-text">Patent Baron: ...</p>
+                        <p id="dialog-text">Freerider Boss: ...</p>
                         <div class="dialog-options">
-                            <button data-choice="patent">Patents measure innovation</button>
-                            <button data-choice="trademark">Trademarks defend terroir</button>
+                            <button data-choice="patent">Collective IP won't stop reputation theft</button>
+                            <button data-choice="trademark">Trademarks defend collective reputation</button>
                         </div>
                         <button id="dialog-continue">Continue</button>
                     </div>
@@ -360,8 +360,8 @@
             },
             {
                 id: "boss",
-                name: "Patent Citadel",
-                description: "Face the monopolist who hoards IP and mocks trademarks.",
+                name: "Freerider Citadel",
+                description: "Face the freerider who steals reputation and exploits collective IP.",
                 trustMultiplier: 1,
                 enemySpeedMultiplier: 1,
                 grapeTheft: false,
@@ -369,13 +369,14 @@
                 tmStatus: "Final showdown",
                 goalLabel: "IP",
                 colors: { skyTop: "#1d030f", skyMid: "#120006", skyBottom: "#050001", hill: "#2a0208", soil: "#160003", vineTint: [240, 120, 150] },
-                introMessage: "The Patent Baron blocks the path – trademarks vs. monopolies!",
+                introMessage: "The Freerider Boss blocks the path – collective IP won't stop reputation theft!",
                 bossConfig: {
                     health: 16,
                     taunts: [
-                        "Patent Baron: \"Trademarks are not relevant for innovation!\"",
-                        "Patent Baron: \"Patents are the true form of innovation!\"",
-                        "Patent Baron: \"Only patents reward true inventors; trademarks ride on reputation!\"",
+                        "Freerider Boss: \"Your collective intellectual property? I'll steal the reputation anyway!\"",
+                        "Freerider Boss: \"GIs protect nothing – I freeride on your collective efforts!\"",
+                        "Freerider Boss: \"Why build reputation when I can appropriate yours? Collective IP is meaningless!\"",
+                        "Freerider Boss: \"Your trademarks won't help – I'll steal again and again!\"",
                     ],
                 },
             },
@@ -810,7 +811,7 @@
             if (currentEnvironment.bossConfig) {
                 boss = new Boss(currentEnvironment.bossConfig);
                 bossDefeated = bossActive = false;
-                beginBossDialogue(["Patent Baron: \"I've reviewed every trademark.\"", "Patent Baron: \"None rival a patent.\"", "You: \"Innovation thrives when shared.\""]);
+                beginBossDialogue(["Freerider Boss: \"I've studied your collective intellectual property.\"", "Freerider Boss: \"Your GIs won't stop me – I'll steal your reputation regardless.\"", "Freerider Boss: \"Collective action means nothing when I can freeride on your efforts.\"", "You: \"With good governance, we can make it!\""]);
             } else {
                 boss = null;
                 dialogOverlay.classList.add("hidden");
@@ -856,13 +857,13 @@
             const targetX = target ? target.x + target.width / 2 : sourceX - 1;
             const dir = Math.sign(targetX - sourceX) || -1;
             projectiles.push({ x: sourceX, y: sourceY, vx: dir * 320, vy: -80 + Math.random() * 160, life: 3, kind: "patent" });
-            showMessage("Patent barrage incoming!", 0.7);
+                    showMessage("Freerider attack incoming!", 0.7);
         }
         function startBossTaunts(lines = []) {
             if (bossTauntTimer) clearTimeout(bossTauntTimer);
             bossTauntQueue = [...lines];
             const advanceTaunt = () => {
-                if (!bossTauntQueue.length) { bossActive = true; showMessage("Prove trademarks power innovation!", 2); return; }
+                if (!bossTauntQueue.length) { bossActive = true; showMessage("Prove trademarks can defend collective reputation!", 2); return; }
                 showMessage(bossTauntQueue.shift(), 2.6);
                 bossTauntTimer = setTimeout(advanceTaunt, 2600);
             };
@@ -883,18 +884,18 @@
         }
         function showBossChoicePrompt() {
             bossAwaitingChoice = true; dialogOverlay.classList.remove("hidden");
-            dialogText.innerHTML = `Patent Baron:<br>"Pick your metric for innovation."`;
+            dialogText.innerHTML = `Freerider Boss:<br>"Your collective IP means nothing – I'll steal your reputation anyway!"`;
             dialogButtons.forEach(b => b.style.display = "inline-block");
             dialogContinue.style.display = "none";
         }
         function handleBossChoice(choice) {
             if (!bossAwaitingChoice) return;
             if (choice === "patent") {
-                dialogText.innerHTML = `Patent Baron smirks:<br>"Exactly. Patents are innovation."`;
+                dialogText.innerHTML = `Freerider Boss smirks:<br>"Exactly. Collective intellectual property can't stop reputation theft."`;
                 showMessage("He refuses to fight.", 2.4); return;
             }
             bossAwaitingChoice = false; dialogOverlay.classList.add("hidden");
-            showMessage(`You: "Trademarks capture innovation!"`, 2.5);
+            showMessage(`You: "With good governance, we can make it!"`, 2.5);
             setTimeout(() => startBossTaunts(currentEnvironment.bossConfig?.taunts || []), 1200);
         }
         function registerPlayerMovement() {
@@ -993,7 +994,7 @@
                     playerProjectiles.splice(i, 1);
                     if(boss.takeDamage(1)) { 
                         bossDefeated = true; bossActive = false; win=true; gameOver=true; 
-                        showMessage("Patent Baron Defeated! Inclusive Innovation!", 4); 
+                        showMessage("Freerider Boss Defeated! Inclusive Innovation!", 4); 
                     } else {
                         showMessage("Trademark Strike!", 0.8);
                     }
@@ -1047,7 +1048,7 @@
                 <div>GI: ${player.giCharters} | CTM: ${player.ctmCharters} | TM: ${player.trademarks}</div>
             `;
             if (boss && boss.isAlive()) {
-               hud.innerHTML += `<div>Patent Baron Health: ${boss.health}/${boss.maxHealth}</div>`;
+               hud.innerHTML += `<div>Freerider Boss Health: ${boss.health}/${boss.maxHealth}</div>`;
             }
         }
 
