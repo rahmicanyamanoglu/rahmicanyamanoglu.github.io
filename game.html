@@ -184,7 +184,8 @@
         <section id="game-section">
             <h2>Wine Runner</h2>
             <div class="game-description">
-                <p>Navigate through innovation systems. Collect GI charters and CTMs, defend against free riders, and face the Freerider Boss with the power of trust!</p>
+                <p><strong>A playable adaptation of my research on collective intellectual property and innovation systems.</strong></p>
+                <p>This game explores the dynamics between high-trust and low-trust environments in innovation ecosystems. Navigate through wine regions where Geographical Indications (GIs) and Collective Trademarks (CTMs) protect collective reputation against free-riders who exploit shared efforts. Experience firsthand how trust, governance structures, and trademark protection shape innovation outcomes—a mini interactive version of the theoretical framework from my PhD research on inclusive innovation in traditional industries.</p>
             </div>
 
             <div id="game-wrapper">
@@ -205,11 +206,7 @@
                 <div id="dialog-overlay" class="hidden">
                     <div class="dialog-box">
                         <p id="dialog-text">Freerider Boss: ...</p>
-                        <div class="dialog-options">
-                            <button data-choice="patent">Collective IP won't stop reputation theft</button>
-                            <button data-choice="trademark">Trust + Trademarks defend collective reputation</button>
-                        </div>
-                        <button id="dialog-continue">Continue</button>
+                        <button id="dialog-continue">Fight!</button>
                     </div>
                 </div>
             </div>
@@ -238,7 +235,6 @@
         const message = document.getElementById("message");
         const dialogOverlay = document.getElementById("dialog-overlay");
         const dialogText = document.getElementById("dialog-text");
-        const dialogButtons = Array.from(document.querySelectorAll("#dialog-overlay button[data-choice]"));
         const dialogContinue = document.getElementById("dialog-continue");
 
         const startOverlay = document.getElementById("start-overlay");
@@ -355,8 +351,6 @@
         let bossDefeated = false;
         let bossTauntQueue = [];
         let bossTauntTimer = null;
-        let bossAwaitingChoice = false;
-        let bossDialogueQueue = [];
         let bossConversationActive = false;
 
         let friendDancePhase = 0;
@@ -385,7 +379,6 @@
             resetGame();
         });
 
-        dialogButtons.forEach(btn => btn.addEventListener("click", () => handleBossChoice(btn.dataset.choice)));
         if (dialogContinue) dialogContinue.addEventListener("click", advanceBossDialogue);
 
         window.addEventListener("keydown", e => {
@@ -397,13 +390,8 @@
 
             const key = e.key.toLowerCase();
 
-            if (bossConversationActive && !bossAwaitingChoice) {
+            if (bossConversationActive) {
                 advanceBossDialogue();
-                return;
-            }
-            if (bossAwaitingChoice) {
-                if (key === "1") handleBossChoice("patent");
-                if (key === "2") handleBossChoice("trademark");
                 return;
             }
             keys[key] = true;
@@ -759,12 +747,7 @@
             if (currentEnvironment.bossConfig) {
                 boss = new Boss(currentEnvironment.bossConfig);
                 bossDefeated = bossActive = false;
-                beginBossDialogue([
-                    "Freerider Boss: \"I've studied your collective intellectual property.\"",
-                    "Freerider Boss: \"Your GIs won't stop me – I'll steal your reputation regardless.\"",
-                    "Freerider Boss: \"Collective action means nothing when I can freeride on your efforts.\"",
-                    "You: \"With good governance and trust, we can make it!\""
-                ]);
+                beginBossDialogue("Freerider Boss: \"Your collective IP means nothing when I steal your reputation. Trademarks won't save you from free-riding!\"");
             } else {
                 boss = null;
                 dialogOverlay.classList.add("hidden");
@@ -822,32 +805,16 @@
             };
             advanceTaunt();
         }
-        function beginBossDialogue(lines) {
-            bossConversationActive = true; bossDialogueQueue = [...lines]; bossAwaitingChoice = false;
-            if (!bossDialogueQueue.length) { showBossChoicePrompt(); return; }
+        function beginBossDialogue(message) {
+            bossConversationActive = true;
             dialogOverlay.classList.remove("hidden");
-            dialogText.innerHTML = bossDialogueQueue[0];
-            dialogContinue.style.display = "inline-block"; dialogButtons.forEach(b => b.style.display = "none");
+            dialogText.innerHTML = message;
+            dialogContinue.style.display = "inline-block";
         }
         function advanceBossDialogue() {
             if (!bossConversationActive) return;
-            bossDialogueQueue.shift();
-            if (!bossDialogueQueue.length) { bossConversationActive = false; showBossChoicePrompt(); return; }
-            dialogText.innerHTML = bossDialogueQueue[0];
-        }
-        function showBossChoicePrompt() {
-            bossAwaitingChoice = true; dialogOverlay.classList.remove("hidden");
-            dialogText.innerHTML = `Freerider Boss:<br>"Your collective IP means nothing – I'll steal your reputation anyway!"`;
-            dialogButtons.forEach(b => b.style.display = "inline-block");
-            dialogContinue.style.display = "none";
-        }
-        function handleBossChoice(choice) {
-            if (!bossAwaitingChoice) return;
-            if (choice === "patent") {
-                dialogText.innerHTML = `Freerider Boss smirks:<br>"Exactly. Collective intellectual property can't stop reputation theft."`;
-                showMessage("He refuses to fight.", 2.4); return;
-            }
-            bossAwaitingChoice = false; dialogOverlay.classList.add("hidden");
+            bossConversationActive = false;
+            dialogOverlay.classList.add("hidden");
             showMessage(`You: "With good governance and trust, we can make it!"`, 2.5);
             setTimeout(() => startBossTaunts(currentEnvironment.bossConfig?.taunts || []), 1200);
         }
