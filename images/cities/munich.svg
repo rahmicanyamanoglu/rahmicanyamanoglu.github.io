@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300" role="img" aria-label="Munich skyline">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a2446"/>
+      <stop offset="58%" stop-color="#5b4653"/>
+      <stop offset="100%" stop-color="#c9a07f"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffe6bd" stop-opacity="0.95"/>
+      <stop offset="60%" stop-color="#ffcf94" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#ffc98c" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="vig" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0b0a14" stop-opacity="0.55"/>
+      <stop offset="42%" stop-color="#0b0a14" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#0b0a14" stop-opacity="0.5"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="480" height="300" fill="url(#sky)"/>
+  <circle cx="96" cy="180" r="78" fill="url(#glow)"/>
+  <circle cx="96" cy="180" r="23" fill="#ffe0ac" opacity="0.9"/>
+  <g fill="#2b2f52" opacity="0.32" color="#2b2f52"><path d="M0 236 L0 202 L60 168 L120 190 L185 160 L250 188 L320 166 L390 192 L450 174 L480 196 L480 236 Z"/></g>
+  <g fill="#241d33" opacity="0.55" color="#241d33"><rect x="24" y="214" width="24" height="22"/><rect x="52" y="208" width="20" height="28"/><rect x="420" y="212" width="26" height="24"/><rect x="450" y="218" width="30" height="18"/></g>
+  <g fill="#150f1d" opacity="0.94" color="#150f1d"><rect x="168" y="210" width="140" height="36"/><rect x="180" y="158" width="30" height="88"/><path d="M179 158 C179 135.05 189.4 132.5 195 130.46 C200.6 132.5 211 135.05 211 158 Z"/><rect x="194.1" y="120.46000000000001" width="1.8" height="10"/><rect x="191.6" y="123.26" width="6.8" height="1.8"/><rect x="266" y="158" width="30" height="88"/><path d="M265 158 C265 135.05 275.4 132.5 281 130.46 C286.6 132.5 297 135.05 297 158 Z"/><rect x="280.1" y="120.46000000000001" width="1.8" height="10"/><rect x="277.6" y="123.26" width="6.8" height="1.8"/><rect x="322" y="186" width="24" height="60"/><path d="M322.0 186 L334 156 L346.0 186 Z"/><rect x="333.3" y="144" width="1.4" height="12"/><rect x="130" y="220" width="34" height="26"/><rect x="352" y="216" width="26" height="30"/></g>
+
+  <rect width="480" height="300" fill="url(#vig)"/>
+</svg>

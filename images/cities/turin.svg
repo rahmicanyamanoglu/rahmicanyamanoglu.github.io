@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300" role="img" aria-label="Turin skyline">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1d2749"/>
+      <stop offset="58%" stop-color="#74483c"/>
+      <stop offset="100%" stop-color="#dfa96f"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffe6bd" stop-opacity="0.95"/>
+      <stop offset="60%" stop-color="#ffcf94" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#ffc98c" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="vig" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0b0a14" stop-opacity="0.55"/>
+      <stop offset="42%" stop-color="#0b0a14" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#0b0a14" stop-opacity="0.5"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="480" height="300" fill="url(#sky)"/>
+  <circle cx="372" cy="172" r="82" fill="url(#glow)"/>
+  <circle cx="372" cy="172" r="24" fill="#ffe0ac" opacity="0.9"/>
+  <g fill="#2b2f52" opacity="0.32" color="#2b2f52"><path d="M0 236 L0 198 L55 158 L115 186 L175 150 L240 184 L300 156 L365 188 L425 164 L480 194 L480 236 Z"/></g>
+  <g fill="#241d33" opacity="0.55" color="#241d33"><rect x="22" y="212" width="26" height="24"/><rect x="54" y="218" width="22" height="18"/><rect x="430" y="214" width="26" height="22"/></g>
+  <g fill="#150f1d" opacity="0.94" color="#150f1d"><rect x="150" y="216" width="132" height="30"/><rect x="196" y="178" width="44" height="68"/><path d="M196 178 L204 160 L232 160 L240 178 Z"/><path d="M204 160 L210 142 L226 142 L232 160 Z"/><path d="M210 142 L214 126 L222 126 L226 142 Z"/><rect x="217.2" y="86" width="1.6" height="40"/><rect x="120" y="224" width="30" height="22"/><rect x="288" y="220" width="28" height="26"/><rect x="320" y="226" width="24" height="20"/></g>
+
+  <rect width="480" height="300" fill="url(#vig)"/>
+</svg>
