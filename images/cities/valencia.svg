@@ -1,28 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300" role="img" aria-label="València skyline">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300" role="img" aria-label="València">
   <defs>
-    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#212c4e"/>
-      <stop offset="58%" stop-color="#8b5540"/>
-      <stop offset="100%" stop-color="#f2bd82"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#ffe6bd" stop-opacity="0.95"/>
-      <stop offset="60%" stop-color="#ffcf94" stop-opacity="0.35"/>
-      <stop offset="100%" stop-color="#ffc98c" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="vig" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#0b0a14" stop-opacity="0.55"/>
-      <stop offset="42%" stop-color="#0b0a14" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#0b0a14" stop-opacity="0.5"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8f4ed"/>
+      <stop offset="100%" stop-color="#ebe4d8"/>
     </linearGradient>
   </defs>
+  <rect width="480" height="300" fill="url(#bg)"/>
 
-  <rect width="480" height="300" fill="url(#sky)"/>
-  <circle cx="370" cy="180" r="88" fill="url(#glow)"/>
-  <circle cx="370" cy="180" r="26" fill="#ffe0ac" opacity="0.9"/>
-  <g fill="#2b2f52" opacity="0.32" color="#2b2f52"><path d="M0 236 L0 218 L100 210 L200 216 L300 208 L400 216 L480 210 L480 236 Z"/></g>
-  <g fill="#241d33" opacity="0.55" color="#241d33"><rect x="24" y="220" width="24" height="16"/><rect x="52" y="216" width="20" height="20"/></g>
-  <g fill="#150f1d" opacity="0.94" color="#150f1d"><path d="M62 232 Q118 186 174 232 Q118 246 62 232 Z"/><ellipse cx="118" cy="226" rx="34" ry="15" fill="#3a2b3f" opacity="0.5"/><path d="M212 232 C214 198 236 172 268 168 C300 166 322 186 326 210 C310 200 288 200 272 212 C258 222 250 232 246 232 Z"/><path d="M338 232 Q344 212 356 206" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M353 232 Q359 210 371 203" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M368 232 Q374 208 386 200" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M383 232 Q389 206 401 197" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M398 232 Q404 204 416 194" fill="none" stroke="currentColor" stroke-width="2.2"/><path d="M436 232 L452 132 L456 132 L448 232 Z"/><path d="M453 140 L424 232" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M453 156 L420 232" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M453 172 L416 232" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M453 188 L412 232" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M453 204 L408 232" fill="none" stroke="currentColor" stroke-width="1.1"/></g>
-  <g><rect x="0" y="236" width="480" height="64" fill="#ffdca8" opacity="0.15"/><rect x="0" y="236" width="480" height="2" fill="#ffecc8" opacity="0.32"/></g>
-  <rect width="480" height="300" fill="url(#vig)"/>
+  <g fill="#6d5a48"><rect x="132" y="248" width="164" height="52"/><rect x="188" y="204" width="52" height="44"/><rect x="194" y="192" width="40" height="12"/><rect x="212.2" y="178" width="1.6" height="14"/><path d="M145.0 248 L150 228 L155.0 248 Z"/><path d="M165.0 248 L170 228 L175.0 248 Z"/><path d="M257.0 248 L262 228 L267.0 248 Z"/><path d="M277.0 248 L282 228 L287.0 248 Z"/><rect x="300" y="152" width="46" height="148"/><rect x="305" y="122" width="36" height="30"/><rect x="311" y="110" width="24" height="12"/><rect x="322.2" y="94" width="1.6" height="16"/></g>
 </svg>

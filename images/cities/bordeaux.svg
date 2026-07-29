@@ -1,28 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300" role="img" aria-label="Bordeaux skyline">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300" role="img" aria-label="Bordeaux">
   <defs>
-    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#1f2a48"/>
-      <stop offset="58%" stop-color="#7d4b3a"/>
-      <stop offset="100%" stop-color="#e8b070"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#ffe6bd" stop-opacity="0.95"/>
-      <stop offset="60%" stop-color="#ffcf94" stop-opacity="0.35"/>
-      <stop offset="100%" stop-color="#ffc98c" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="vig" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#0b0a14" stop-opacity="0.55"/>
-      <stop offset="42%" stop-color="#0b0a14" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#0b0a14" stop-opacity="0.5"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8f4ed"/>
+      <stop offset="100%" stop-color="#ebe4d8"/>
     </linearGradient>
   </defs>
+  <rect width="480" height="300" fill="url(#bg)"/>
 
-  <rect width="480" height="300" fill="url(#sky)"/>
-  <circle cx="356" cy="176" r="85" fill="url(#glow)"/>
-  <circle cx="356" cy="176" r="25" fill="#ffe0ac" opacity="0.9"/>
-  <g fill="#2b2f52" opacity="0.32" color="#2b2f52"><path d="M0 236 L0 216 L90 208 L180 214 L280 206 L380 214 L480 208 L480 236 Z"/></g>
-  <g fill="#241d33" opacity="0.55" color="#241d33"><rect x="30" y="218" width="26" height="18"/><rect x="62" y="214" width="20" height="22"/></g>
-  <g fill="#150f1d" opacity="0.94" color="#150f1d"><rect x="78" y="198" width="150" height="26"/><path d="M132 198 C132 178 143 167 151 165 C159 167 170 178 170 198 Z"/><rect x="150.2" y="150" width="1.6" height="15"/><path d="M92.5 198 L100 180 L107.5 198 Z"/><path d="M198.5 198 L206 180 L213.5 198 Z"/><rect x="232" y="206" width="26" height="18"/><rect x="40" y="222" width="440" height="6"/><path d="M52 228 h13 v6 q0 8 -6.5 8 q-6.5 0 -6.5 -8 Z"/><path d="M90 228 h13 v6 q0 8 -6.5 8 q-6.5 0 -6.5 -8 Z"/><path d="M128 228 h13 v6 q0 8 -6.5 8 q-6.5 0 -6.5 -8 Z"/><path d="M166 228 h13 v6 q0 8 -6.5 8 q-6.5 0 -6.5 -8 Z"/><path d="M204 228 h13 v6 q0 8 -6.5 8 q-6.5 0 -6.5 -8 Z"/><path d="M242 228 h13 v6 q0 8 -6.5 8 q-6.5 0 -6.5 -8 Z"/><path d="M280 228 h13 v6 q0 8 -6.5 8 q-6.5 0 -6.5 -8 Z"/><path d="M318 228 h13 v6 q0 8 -6.5 8 q-6.5 0 -6.5 -8 Z"/><path d="M356 228 h13 v6 q0 8 -6.5 8 q-6.5 0 -6.5 -8 Z"/><path d="M394 228 h13 v6 q0 8 -6.5 8 q-6.5 0 -6.5 -8 Z"/><path d="M432 228 h13 v6 q0 8 -6.5 8 q-6.5 0 -6.5 -8 Z"/></g>
-  <g><rect x="0" y="242" width="480" height="58" fill="#f6d9ae" opacity="0.14"/><rect x="0" y="242" width="480" height="2" fill="#ffe9c4" opacity="0.3"/></g>
-  <rect width="480" height="300" fill="url(#vig)"/>
+  <g fill="#6d5a48"><rect x="96" y="238" width="190" height="34"/><path d="M172 238 C172 214 184 200 191 197 C198 200 210 214 210 238 Z"/><rect x="190.2" y="176" width="1.6" height="21"/><path d="M115.0 238 L124 216 L133.0 238 Z"/><path d="M249.0 238 L258 216 L267.0 238 Z"/><rect x="28" y="272" width="424" height="7"/><path d="M42 279 h14 v10 q0 11 -7 11 q-7 0 -7 -11 Z"/><path d="M82 279 h14 v10 q0 11 -7 11 q-7 0 -7 -11 Z"/><path d="M122 279 h14 v10 q0 11 -7 11 q-7 0 -7 -11 Z"/><path d="M162 279 h14 v10 q0 11 -7 11 q-7 0 -7 -11 Z"/><path d="M202 279 h14 v10 q0 11 -7 11 q-7 0 -7 -11 Z"/><path d="M242 279 h14 v10 q0 11 -7 11 q-7 0 -7 -11 Z"/><path d="M282 279 h14 v10 q0 11 -7 11 q-7 0 -7 -11 Z"/><path d="M322 279 h14 v10 q0 11 -7 11 q-7 0 -7 -11 Z"/><path d="M362 279 h14 v10 q0 11 -7 11 q-7 0 -7 -11 Z"/><path d="M402 279 h14 v10 q0 11 -7 11 q-7 0 -7 -11 Z"/><path d="M442 279 h14 v10 q0 11 -7 11 q-7 0 -7 -11 Z"/></g>
 </svg>

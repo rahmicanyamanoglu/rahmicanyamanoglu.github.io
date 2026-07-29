@@ -1,28 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300" role="img" aria-label="Athens skyline">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300" role="img" aria-label="Athens">
   <defs>
-    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#25294d"/>
-      <stop offset="58%" stop-color="#8a5340"/>
-      <stop offset="100%" stop-color="#f0b978"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#ffe6bd" stop-opacity="0.95"/>
-      <stop offset="60%" stop-color="#ffcf94" stop-opacity="0.35"/>
-      <stop offset="100%" stop-color="#ffc98c" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="vig" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#0b0a14" stop-opacity="0.55"/>
-      <stop offset="42%" stop-color="#0b0a14" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#0b0a14" stop-opacity="0.5"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8f4ed"/>
+      <stop offset="100%" stop-color="#ebe4d8"/>
     </linearGradient>
   </defs>
+  <rect width="480" height="300" fill="url(#bg)"/>
 
-  <rect width="480" height="300" fill="url(#sky)"/>
-  <circle cx="108" cy="172" r="102" fill="url(#glow)"/>
-  <circle cx="108" cy="172" r="30" fill="#ffe0ac" opacity="0.9"/>
-  <g fill="#2b2f52" opacity="0.32" color="#2b2f52"><path d="M0 236 L0 206 L70 178 L150 200 L230 186 L320 204 L400 184 L480 202 L480 236 Z"/></g>
-  <g fill="#241d33" opacity="0.55" color="#241d33"><rect x="24" y="218" width="26" height="18"/><rect x="56" y="222" width="22" height="14"/><rect x="404" y="220" width="28" height="16"/><rect x="438" y="224" width="30" height="12"/></g>
-  <g fill="#150f1d" opacity="0.94" color="#150f1d"><path d="M120 246 L138 216 L200 202 L300 200 L352 214 L368 246 Z"/><rect x="186" y="168" width="116" height="6"/><path d="M186 168 L244 152 L302 168 Z"/><rect x="192" y="174" width="8" height="28"/><rect x="207" y="174" width="8" height="28"/><rect x="222" y="174" width="8" height="28"/><rect x="237" y="174" width="8" height="28"/><rect x="252" y="174" width="8" height="28"/><rect x="267" y="174" width="8" height="28"/><rect x="282" y="174" width="8" height="28"/><rect x="184" y="200" width="120" height="5"/></g>
-
-  <rect width="480" height="300" fill="url(#vig)"/>
+  <g fill="#6d5a48"><path d="M108 300 L132 262 L200 244 L306 242 L364 260 L386 300 Z"/><rect x="184" y="204" width="128" height="7"/><path d="M184 204 L248 184 L312 204 Z"/><rect x="191" y="211" width="9" height="34"/><rect x="207" y="211" width="9" height="34"/><rect x="223" y="211" width="9" height="34"/><rect x="239" y="211" width="9" height="34"/><rect x="255" y="211" width="9" height="34"/><rect x="271" y="211" width="9" height="34"/><rect x="287" y="211" width="9" height="34"/><rect x="303" y="211" width="9" height="34"/></g>
 </svg>

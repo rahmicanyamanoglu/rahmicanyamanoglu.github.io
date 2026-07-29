@@ -59,7 +59,7 @@
         );
         if (!els.length) return;
 
-        var MAX = 5; // degrees — restrained on purpose
+        var MAX = 3.2; // degrees — a hint of depth, not a gimmick
 
         Array.prototype.forEach.call(els, function (el) {
             var frame = null;
@@ -102,8 +102,8 @@
                 frame = null;
                 var y = window.pageYOffset;
                 if (y > header.offsetHeight) return;   // stop work once past
-                content.style.transform = 'translateY(' + (y * 0.14).toFixed(1) + 'px)';
-                content.style.opacity = Math.max(0, 1 - y / (header.offsetHeight * 0.95)).toFixed(3);
+                // gentle drift only — no fade; on a light header fading reads as a glitch
+                content.style.transform = 'translateY(' + (y * 0.07).toFixed(1) + 'px)';
             });
         }, { passive: true });
     }
