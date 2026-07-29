@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300" role="img" aria-label="Budapest skyline">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1b2545"/>
+      <stop offset="58%" stop-color="#6f4340"/>
+      <stop offset="100%" stop-color="#dfa06b"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffe6bd" stop-opacity="0.95"/>
+      <stop offset="60%" stop-color="#ffcf94" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#ffc98c" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="vig" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0b0a14" stop-opacity="0.55"/>
+      <stop offset="42%" stop-color="#0b0a14" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#0b0a14" stop-opacity="0.5"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="480" height="300" fill="url(#sky)"/>
+  <circle cx="120" cy="176" r="82" fill="url(#glow)"/>
+  <circle cx="120" cy="176" r="24" fill="#ffe0ac" opacity="0.9"/>
+  <g fill="#2b2f52" opacity="0.32" color="#2b2f52"><path d="M0 236 L0 200 L70 172 L140 192 L200 180 L270 196 L340 178 L410 198 L480 190 L480 236 Z"/></g>
+  <g fill="#241d33" opacity="0.55" color="#241d33"><rect x="20" y="208" width="30" height="28"/><rect x="58" y="214" width="22" height="22"/><path d="M88.0 212 L96 182 L104.0 212 Z"/><rect x="95.3" y="174" width="1.4" height="8"/></g>
+  <g fill="#150f1d" opacity="0.94" color="#150f1d"><rect x="140" y="216" width="210" height="30"/><path d="M215 216 C215 190 230 176 245 172 C260 176 275 190 275 216 Z"/><rect x="244.2" y="152" width="1.6" height="20"/><path d="M159.0 216 L168 182 L177.0 216 Z"/><rect x="167.3" y="173" width="1.4" height="9"/><path d="M313.0 216 L322 182 L331.0 216 Z"/><rect x="321.3" y="173" width="1.4" height="9"/><path d="M186.0 216 L192 194 L198.0 216 Z"/><path d="M292.0 216 L298 194 L304.0 216 Z"/><path d="M356 246 L356 214 M420 246 L420 214" stroke-width="4" stroke="currentColor" fill="none"/><path d="M340 236 Q388 208 436 236" fill="none" stroke="currentColor" stroke-width="2.4"/><rect x="336" y="244" width="144" height="6"/></g>
+
+  <rect width="480" height="300" fill="url(#vig)"/>
+</svg>

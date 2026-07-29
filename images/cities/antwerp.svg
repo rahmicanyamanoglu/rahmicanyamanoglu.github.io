@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300" role="img" aria-label="Antwerp skyline">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1e2a4c"/>
+      <stop offset="58%" stop-color="#5d4a52"/>
+      <stop offset="100%" stop-color="#cfa079"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffe6bd" stop-opacity="0.95"/>
+      <stop offset="60%" stop-color="#ffcf94" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#ffc98c" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="vig" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0b0a14" stop-opacity="0.55"/>
+      <stop offset="42%" stop-color="#0b0a14" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#0b0a14" stop-opacity="0.5"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="480" height="300" fill="url(#sky)"/>
+  <circle cx="392" cy="182" r="75" fill="url(#glow)"/>
+  <circle cx="392" cy="182" r="22" fill="#ffe0ac" opacity="0.9"/>
+  <g fill="#2b2f52" opacity="0.32" color="#2b2f52"><path d="M0 236 L0 214 L80 204 L160 212 L250 202 L340 212 L420 204 L480 212 L480 236 Z"/></g>
+  <g fill="#241d33" opacity="0.55" color="#241d33"><rect x="28" y="216" width="24" height="20"/><rect x="58" y="210" width="20" height="26"/><rect x="408" y="212" width="26" height="24"/><rect x="440" y="218" width="28" height="18"/></g>
+  <g fill="#150f1d" opacity="0.94" color="#150f1d"><rect x="150" y="210" width="96" height="36"/><rect x="196" y="150" width="26" height="96"/><path d="M196.0 150 L209 106 L222.0 150 Z"/><rect x="208.3" y="90" width="1.4" height="16"/><rect x="200" y="164" width="4" height="12" fill="none" stroke="currentColor" stroke-width="1.4"/><rect x="168" y="196" width="22" height="50"/><path d="M168.0 196 L179 176 L190.0 196 Z"/><path d="M258 246 L258 214 L264 214 L264 208 L272 208 L272 200 L280 200 L280 208 L288 208 L288 214 L294 214 L294 246 Z"/><path d="M300 246 L300 218 L306 218 L306 212 L314 212 L314 205 L322 205 L322 212 L330 212 L330 218 L336 218 L336 246 Z"/><rect x="120" y="222" width="28" height="24"/></g>
+
+  <rect width="480" height="300" fill="url(#vig)"/>
+</svg>
