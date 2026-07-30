@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300" role="img" aria-label="Utrecht">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8f4ed"/>
+      <stop offset="100%" stop-color="#ebe4d8"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="300" fill="url(#bg)"/>
+
+  <g fill="#6d5a48"><rect x="206" y="118" width="44" height="182"/><rect x="212" y="86" width="32" height="32"/><rect x="218" y="68" width="20" height="18"/><rect x="227.2" y="50" width="1.6" height="18"/><rect x="268" y="238" width="86" height="62"/><path d="M296.0 238 L311 218 L326.0 238 Z"/><rect x="140" y="254" width="58" height="46"/><path d="M147.5 254 L152 239 L156.5 254 Z"/><path d="M167.5 254 L172 239 L176.5 254 Z"/><path d="M185.5 254 L190 239 L194.5 254 Z"/></g>
+</svg>
