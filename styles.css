@@ -653,6 +653,9 @@ h3.subsection:first-of-type { margin-top: 0; }
     align-items: start;
 }
 
+/* grid children need this or a long heading blows the column out */
+.timeline-text { min-width: 0; }
+
 .timeline-city {
     position: relative;
     overflow: hidden;
