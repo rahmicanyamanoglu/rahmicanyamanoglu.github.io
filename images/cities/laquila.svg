@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300" role="img" aria-label="L'Aquila">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f8f4ed"/>
+      <stop offset="100%" stop-color="#ebe4d8"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="300" fill="url(#bg)"/>
+  <g fill="#a9967f" opacity="0.22"><path d="M0 300 L0 246 L54 200 L118 232 L186 194 L254 230 L320 198 L392 234 L446 206 L480 240 L480 300 Z"/></g>
+  <g fill="#6d5a48"><rect x="150" y="204" width="156" height="96"/><rect x="150" y="196" width="156" height="9"/><circle cx="228" cy="238" r="13" fill="#f8f4ed"/><circle cx="186" cy="244" r="7" fill="#f8f4ed"/><circle cx="270" cy="244" r="7" fill="#f8f4ed"/><rect x="314" y="172" width="30" height="128"/><path d="M314.0 172 L329 148 L344.0 172 Z"/></g>
+</svg>

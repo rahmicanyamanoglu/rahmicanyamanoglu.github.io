@@ -11,7 +11,7 @@
         var targets = document.querySelectorAll(
             'section > h2, h3.subsection, .publication, .conference-item, ' +
             '.timeline-item, .contact-item, .essay-card, .about-text, ' +
-            '.research-interests, .intro-text'
+            '.research-interests, .intro-text, .journey-stop'
         );
         if (!targets.length) return;
 
@@ -41,6 +41,7 @@
                 el.className.indexOf('conference-item') > -1 ||
                 el.className.indexOf('timeline-item') > -1 ||
                 el.className.indexOf('contact-item') > -1 ||
+                el.className.indexOf('journey-stop') > -1 ||
                 el.className.indexOf('essay-card') > -1) {
                 el.dataset.rIndex = counters[key]++;
             }
