@@ -55,7 +55,7 @@
         if (!window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
 
         var els = document.querySelectorAll(
-            '.profile-photo, .essay-card, .conference-item.has-city'
+            '.profile-photo, .essay-card'
         );
         if (!els.length) return;
 

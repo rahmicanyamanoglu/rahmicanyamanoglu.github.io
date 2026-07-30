@@ -422,75 +422,6 @@ h3.subsection:first-of-type { margin-top: 0; }
 .conf-title { font-size: .99rem; margin-bottom: 3px; line-height: 1.5; }
 .conf-venue { font-size: .88rem; color: var(--muted); }
 
-/* --- variant carrying a city drawing (also used on .publication) --- */
-.has-city {
-    display: grid;
-    grid-template-columns: 156px 1fr;
-    gap: 22px;
-    align-items: center;
-    padding: 14px 18px 14px 14px;
-    margin-bottom: 14px;
-    background: var(--raised);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    box-shadow: var(--e1);
-    transform: perspective(1200px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
-    transform-style: preserve-3d;
-    transition: transform .28s var(--ease), box-shadow .4s var(--ease),
-                border-color .4s var(--ease);
-    will-change: transform;
-}
-
-.has-city::before { display: none; }
-
-.has-city:hover {
-    border-color: var(--accent-light);
-    box-shadow: var(--e3);
-}
-
-.conf-city {
-    position: relative;
-    overflow: hidden;
-    border-radius: 6px;
-    aspect-ratio: 8 / 5;
-    background: var(--sunk);
-    box-shadow: inset 0 0 0 1px rgba(31, 26, 21, .07);
-    transform: translateZ(20px);
-}
-
-.conf-city img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: transform .8s var(--ease);
-}
-
-.has-city:hover .conf-city img { transform: scale(1.05); }
-
-/* city name set into the drawing's empty sky */
-.conf-city-label {
-    position: absolute;
-    left: 10px;
-    top: 8px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: .58rem;
-    font-weight: 600;
-    letter-spacing: .17em;
-    text-transform: uppercase;
-    color: var(--muted);
-}
-
-.conf-body { transform: translateZ(8px); }
-
-.conf-body .conf-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.15rem;
-    font-weight: 500;
-    line-height: 1.38;
-    margin-bottom: 4px;
-}
-
 /* ============================================================
    Timeline
    ============================================================ */
@@ -898,14 +829,6 @@ footer::before {
 
     .timeline-city-label { display: none; }
 
-    .has-city {
-        grid-template-columns: 1fr;
-        gap: 12px;
-        padding: 12px;
-    }
-
-    .conf-city { aspect-ratio: 16 / 6; transform: none; }
-    .conf-body { transform: none; }
 }
 
 /* ============================================================
@@ -925,7 +848,6 @@ footer::before {
 
     .profile-photo,
     .essay-card,
-    .has-city { transform: none !important; }
 }
 
 :focus-visible {
@@ -940,12 +862,11 @@ footer::before {
 
 @media print {
     body { background: #fff; font-size: 11pt; }
-    body::after, nav, .conf-city { display: none; }
+    body::after, nav { display: none; }
     header::before { display: none; }
     header { padding: 0 0 18px; border-bottom: 1px solid #ccc; }
     .container { max-width: none; padding: 0; }
     section { padding: 18px 0; border-bottom: none; }
-    .has-city { grid-template-columns: 1fr; border: none; box-shadow: none; padding: 0; }
     .reveal { opacity: 1 !important; translate: none !important; }
     a { color: inherit; text-decoration: none; }
 }
