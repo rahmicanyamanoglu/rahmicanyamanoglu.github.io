@@ -79,6 +79,47 @@ header {
     position: relative;
     padding: 76px 0 62px;
     margin-bottom: 8px;
+    isolation: isolate;   /* keeps the wash and the panorama behind the content */
+}
+
+/* ---- the panning skyline behind the entrance ---------------------------
+   Two identical copies of the panorama sit side by side; translating the
+   strip by exactly half its width lands copy two where copy one began, so
+   the loop has no seam. Both edges of the drawing are plain ground, so
+   nothing is cut at the join. It is an SVG, not a video: ~4 kB, no decode
+   cost, and it scales to any display.                                    */
+.hero-pan {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 100vw;
+    margin-left: -50vw;
+    height: 66%;
+    overflow: hidden;
+    z-index: -1;
+    pointer-events: none;
+    opacity: .12;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 42%, #000 84%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 42%, #000 84%, transparent);
+}
+
+.hero-pan-strip {
+    display: flex;
+    width: max-content;
+    height: 100%;
+    animation: heroPan 120s linear infinite;
+}
+
+.hero-pan-strip img {
+    display: block;
+    height: 100%;
+    width: auto;
+    max-width: none;
+}
+
+@keyframes heroPan {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(-50%, 0, 0); }
 }
 
 /* a warm wash that breaks out of the container, edge to edge */
@@ -382,6 +423,82 @@ h3.subsection:first-of-type { margin-top: 0; }
     color: #6f5427;
     background: rgba(184, 145, 47, .09);
     border: 1px solid rgba(184, 145, 47, .34);
+}
+
+/* ---- expandable abstract ------------------------------------------------
+   <details> so it works with no JS, opens from the keyboard, and keeps the
+   abstract in the DOM for crawlers. The card lights up when open; browsers
+   that support ::details-content also ease the reveal, the rest just show it. */
+.pub-abstract { margin-top: 11px; }
+
+.pub-abstract > summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    list-style: none;
+    font-size: .66rem;
+    font-weight: 600;
+    letter-spacing: .15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 2px 0;
+    transition: color .22s var(--ease);
+}
+
+.pub-abstract > summary::-webkit-details-marker { display: none; }
+.pub-abstract > summary::marker { content: ''; }
+
+.pub-abstract > summary::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-right: 1.4px solid currentColor;
+    border-bottom: 1.4px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform .32s var(--ease);
+}
+
+.pub-abstract > summary:hover { color: var(--accent); }
+.pub-abstract[open] > summary { color: var(--accent); }
+.pub-abstract[open] > summary::before { transform: rotate(45deg); }
+
+.pub-abstract-body {
+    font-size: .92rem;
+    line-height: 1.74;
+    color: var(--ink-soft);
+    max-width: 64ch;
+    padding: 12px 0 2px;
+}
+
+/* the card itself lifts while an abstract is open */
+.publication:has(> .pub-abstract[open]) {
+    background: var(--raised);
+    box-shadow: var(--e2);
+    border-radius: 0 8px 8px 0;
+    padding-right: 20px;
+}
+
+.publication:has(> .pub-abstract[open])::before {
+    width: 2px;
+    background: var(--accent);
+}
+
+@supports (interpolate-size: allow-keywords) {
+    :root { interpolate-size: allow-keywords; }
+
+    .pub-abstract::details-content {
+        block-size: 0;
+        overflow: hidden;
+        opacity: 0;
+        transition: block-size .42s var(--ease), content-visibility .42s allow-discrete,
+                    opacity .34s var(--ease);
+    }
+
+    .pub-abstract[open]::details-content {
+        block-size: auto;
+        opacity: 1;
+    }
 }
 
 .pub-doi { font-size: .85rem; margin-top: 6px; }
@@ -846,8 +963,12 @@ footer::before {
 
     .reveal { opacity: 1; translate: none; }
 
+    /* the blanket rule above only shortens animations — for a looping pan
+       that would spin it, so stop this one by name */
+    .hero-pan-strip { animation: none; }
+
     .profile-photo,
-    .essay-card,
+    .essay-card { transform: none !important; }
 }
 
 :focus-visible {
