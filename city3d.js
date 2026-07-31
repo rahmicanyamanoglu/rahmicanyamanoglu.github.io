@@ -20,12 +20,11 @@
     var reduced = window.matchMedia &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    var TILT = 0.60;              // low enough to read facades, not a plan
+    var TILT = 0.55;              // low enough to read facades, not a plan
     var yaw = Math.PI / 4;        // start where the flat drawing left off
     var targetYaw = yaw;
     var drag = null;
     var city = null;
-    var pins = [];
     var W = 0, H = 0, dpr = 1, scale = 1, cx = 0, cy = 0, originY = 0;
     var zoom = 1, targetZoom = 1, baseScale = 1;
 
@@ -265,16 +264,6 @@
             }
         }
         ctx.restore();
-        placePins();
-    }
-
-    function placePins() {
-        for (var i = 0; i < pins.length; i++) {
-            var a = city.anchors[i];
-            var p = project([a.x, a.y, a.z / 26]);
-            pins[i].style.left = ((W / 2 + p[0]) / dpr).toFixed(1) + 'px';
-            pins[i].style.top = ((H / 2 + p[1]) / dpr).toFixed(1) + 'px';
-        }
     }
 
     /* ------------------------------------------------------------ sizing */
@@ -282,17 +271,17 @@
         var rect = stage.getBoundingClientRect();
         dpr = Math.min(window.devicePixelRatio || 1, 2);
         W = Math.round(rect.width * dpr);
-        H = Math.round(rect.width * 0.62 * dpr);
+        H = Math.round(rect.width * 0.7 * dpr);
         canvas.width = W;
         canvas.height = H;
         canvas.style.width = '100%';
-        canvas.style.height = (rect.width * 0.62) + 'px';
+        canvas.style.height = (rect.width * 0.7) + 'px';
         var e = city.extent;
         cx = (e[0] + e[2]) / 2;
         cy = (e[1] + e[3]) / 2;
-        baseScale = rect.width * dpr / ((e[2] - e[0]) * 1.16);
+        baseScale = rect.width * dpr / ((e[2] - e[0]) * 1.04);
         scale = baseScale * zoom;
-        originY = H * 0.18;
+        originY = H * 0.16;
         frame();
     }
 
@@ -313,7 +302,6 @@
     /* --------------------------------------------------------- controls */
     function bind() {
         stage.addEventListener('pointerdown', function (e) {
-            if (e.target.closest('.city-pin')) return;
             drag = { x: e.clientX, yaw: targetYaw };
             spinning = false;
             stage.setPointerCapture(e.pointerId);
@@ -329,23 +317,6 @@
         }
         stage.addEventListener('pointerup', release);
         stage.addEventListener('pointercancel', release);
-        stage.addEventListener('wheel', function (e) {
-            if (!e.deltaY) return;
-            e.preventDefault();
-            targetZoom = Math.max(0.75, Math.min(3.4,
-                targetZoom * (e.deltaY < 0 ? 1.12 : 0.89)));
-        }, { passive: false });
-
-        pins.forEach(function (pin, i) {
-            pin.addEventListener('click', function () {
-                var a = city.anchors[i];
-                spinning = false;
-                targetZoom = targetZoom > 1.6 ? 1 : 2.4;
-                // turn the district towards the viewer
-                targetYaw = -Math.atan2(a.y - cy, a.x - cx) + Math.PI / 2;
-            });
-        });
-
         stage.addEventListener('mouseenter', function () { spinning = false; });
         stage.addEventListener('mouseleave', function () {
             if (!reduced) spinning = true;
@@ -353,12 +324,10 @@
         window.addEventListener('resize', resize);
     }
 
-    fetch('images/city.json?v=3')
+    fetch('images/city.json?v=4')
         .then(function (r) { return r.json(); })
         .then(function (data) {
             city = data;
-            pins = Array.prototype.slice.call(stage.querySelectorAll('.city-pin'));
-            if (pins.length !== city.anchors.length) return;   // markup drifted
             var img = stage.querySelector('img');
             if (img) img.remove();
             stage.insertBefore(canvas, stage.firstChild);
