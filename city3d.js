@@ -34,14 +34,14 @@
     })();
 
     /* ---------------------------------------------------------- palette */
-    var BGF = [248, 243, 234];      // what distance dissolves into
+    var BGF = [23, 28, 41];         // the night the distance dissolves into
 
     /* depth of field on the cheap: aerial perspective. The further a face
        sits, the more its colour is pulled toward the background, so the
        skyline melts away instead of stopping at a hard edge. */
     function fogOf(z) {
-        var t = (6 - z) / 26;
-        return t < 0 ? 0 : (t > 0.74 ? 0.74 : t);
+        var t = (6 - z) / 24;
+        return t < 0 ? 0 : (t > 0.8 ? 0.8 : t);
     }
 
     function shade(base, lum, fog) {
@@ -51,12 +51,14 @@
                         Math.round(base[1] * t * (1 - f) + BGF[1] * f) + ',' +
                         Math.round(base[2] * t * (1 - f) + BGF[2] * f) + ')';
     }
-    var WALL = [214, 196, 170];
-    var ROOFC = [206, 188, 160];
-    var PITCH = [198, 172, 140];
-    var PAD = [229, 220, 204];
-    var GRND = [239, 232, 219];
-    var ROADC = [221, 213, 199];
+    var WALL = [88, 98, 122];
+    var ROOFC = [126, 137, 160];
+    var PITCH = [104, 115, 140];
+    var PAD = [40, 47, 63];
+    var GRND = [32, 38, 52];
+    var ROADC = [52, 60, 79];
+    var GLASS = [30, 35, 48];
+    var LIT = [222, 178, 108];
 
     /* ------------------------------------------------------- projection */
     function project(p) {
@@ -99,13 +101,15 @@
        interpolation of the four projected corners lands every window exactly
        on the wall plane — no extra faces, no sorting cost. Painted with the
        face itself, nearer walls simply cover them. */
-    function glaze(f, lenW, hW, base, lum) {
+    function glaze(f, lenW, hW, seed) {
         if (lenW < 0.45 || hW < 0.55) return;
         var fog = fogOf(f.z);
-        if (fog > 0.42) return;         // too deep in the haze to resolve glass
-        f.win = { rows: Math.min(10, Math.max(1, Math.round(hW / 0.5))),
-                  cols: Math.min(8, Math.max(1, Math.round(lenW / 0.4))) };
-        f.winFill = shade(base, lum * 0.4, fog);
+        if (fog > 0.5) return;          // too deep in the dark to resolve glass
+        f.win = { rows: Math.min(12, Math.max(1, Math.round(hW / 0.45))),
+                  cols: Math.min(9, Math.max(1, Math.round(lenW / 0.36))),
+                  seed: seed };
+        f.winFill = shade(GLASS, 1, fog);
+        f.litFill = shade(LIT, 1, fog * 1.1);
     }
 
     function tri(out, pts, base, lum) {
@@ -137,11 +141,25 @@
                  PAD, 1);
         });
 
-        city.solids.forEach(function (s) {
+        city.solids.forEach(function (s, si) {
             var x = s.x, y = s.y, w = s.w, d = s.d, h = s.h / 26;   // world z
             if (s.t === 'tree') {
                 var t = project([x, y, 0]);
                 out.push({ z: t[2], tree: t, r: 0.16 * scale });
+                return;
+            }
+            if (s.t === 'lamp') {
+                var lb = project([x, y, 0]), lt = project([x, y, h]);
+                out.push({ z: lb[2], lamp: [lb, lt], r: 0.05 * scale });
+                return;
+            }
+            if (s.t === 'car') {
+                var x1c = x + w, y1c = y + d;
+                quad(out, [[x, y, 0], [x1c, y, 0], [x1c, y, h], [x, y, h]], [66, 76, 98]);
+                quad(out, [[x1c, y, 0], [x1c, y1c, 0], [x1c, y1c, h], [x1c, y, h]], [66, 76, 98]);
+                quad(out, [[x1c, y1c, 0], [x, y1c, 0], [x, y1c, h], [x1c, y1c, h]], [66, 76, 98]);
+                quad(out, [[x, y1c, 0], [x, y, 0], [x, y, h], [x, y1c, h]], [66, 76, 98]);
+                quad(out, [[x, y, h], [x1c, y, h], [x1c, y1c, h], [x, y1c, h]], [104, 114, 138], 1);
                 return;
             }
             var x1 = x + w, y1 = y + d;
@@ -149,10 +167,10 @@
             var f2 = quad(out, [[x1, y, 0], [x1, y1, 0], [x1, y1, h], [x1, y, h]], WALL);
             var f3 = quad(out, [[x1, y1, 0], [x, y1, 0], [x, y1, h], [x1, y1, h]], WALL);
             var f4 = quad(out, [[x, y1, 0], [x, y, 0], [x, y, h], [x, y1, h]], WALL);
-            glaze(f1, w, h, WALL, f1.lum);
-            glaze(f2, d, h, WALL, f2.lum);
-            glaze(f3, w, h, WALL, f3.lum);
-            glaze(f4, d, h, WALL, f4.lum);
+            glaze(f1, w, h, si * 4);
+            glaze(f2, d, h, si * 4 + 1);
+            glaze(f3, w, h, si * 4 + 2);
+            glaze(f4, d, h, si * 4 + 3);
 
             if (s.t === 'pitch') {
                 var r = s.r / 26, mx = x + w / 2;
@@ -184,12 +202,12 @@
     /* ------------------------------------------------------------- draw */
     function frame() {
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        ctx.clearRect(0, 0, W, H);
-        var sky = ctx.createLinearGradient(0, 0, 0, H / dpr * 0.55);
-        sky.addColorStop(0, 'rgba(243,233,219,0.85)');
-        sky.addColorStop(1, 'rgba(243,233,219,0)');
+        var Wd = W / dpr, Hd = H / dpr;
+        var sky = ctx.createLinearGradient(0, 0, 0, Hd);
+        sky.addColorStop(0, '#232b3d');
+        sky.addColorStop(1, '#12161f');
         ctx.fillStyle = sky;
-        ctx.fillRect(0, 0, W / dpr, H / dpr * 0.55);
+        ctx.fillRect(0, 0, Wd, Hd);
         ctx.save();
         ctx.translate(W / 2, H / 2);
 
@@ -211,15 +229,37 @@
                 if (!vis) continue;
             }
             if (f.tree) {
-                ctx.fillStyle = shade([168, 179, 148], 1, fogOf(f.z));
+                ctx.fillStyle = shade([52, 66, 58], 1, fogOf(f.z));
                 ctx.beginPath();
-                ctx.ellipse(f.tree[0], f.tree[1] - f.r * 1.15, f.r * .85, f.r * 1.25,
-                            0, 0, Math.PI * 2);
+                ctx.ellipse(f.tree[0] - f.r * .5, f.tree[1] - f.r * .9,
+                            f.r * .62, f.r * .82, 0, 0, Math.PI * 2);
+                ctx.ellipse(f.tree[0] + f.r * .45, f.tree[1] - f.r * 1.05,
+                            f.r * .58, f.r * .78, 0, 0, Math.PI * 2);
+                ctx.ellipse(f.tree[0], f.tree[1] - f.r * 1.45,
+                            f.r * .66, f.r * .85, 0, 0, Math.PI * 2);
+                ctx.fill();
+                continue;
+            }
+            if (f.lamp) {
+                var fg = fogOf(f.z);
+                ctx.strokeStyle = 'rgba(120,130,155,' + (0.8 * (1 - fg)).toFixed(2) + ')';
+                ctx.lineWidth = Math.max(1, 0.03 * scale);
+                ctx.beginPath();
+                ctx.moveTo(f.lamp[0][0], f.lamp[0][1]);
+                ctx.lineTo(f.lamp[1][0], f.lamp[1][1]);
+                ctx.stroke();
+                ctx.fillStyle = 'rgba(236,196,124,' + (0.16 * (1 - fg)).toFixed(2) + ')';
+                ctx.beginPath();
+                ctx.arc(f.lamp[1][0], f.lamp[1][1], f.r * 2.6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = shade(LIT, 1, fg * 0.6);
+                ctx.beginPath();
+                ctx.arc(f.lamp[1][0], f.lamp[1][1], f.r * 0.85, 0, Math.PI * 2);
                 ctx.fill();
                 continue;
             }
             if (f.dome) {
-                ctx.fillStyle = shade([206, 188, 160], 1, fogOf(f.z));
+                ctx.fillStyle = shade([126, 137, 160], 1, fogOf(f.z));
                 ctx.beginPath();
                 ctx.ellipse(f.dome[0], f.dome[1], f.r, f.r * 1.15, 0, Math.PI, Math.PI * 2);
                 ctx.fill();
@@ -227,11 +267,11 @@
             }
             if (f.line) {
                 if (f.dash) {
-                    ctx.strokeStyle = 'rgba(246,241,230,.85)';
+                    ctx.strokeStyle = 'rgba(196,206,228,.4)';
                     ctx.lineWidth = Math.max(1, 0.055 * scale);
                     ctx.setLineDash([0.34 * scale, 0.42 * scale]);
                 } else {
-                    ctx.strokeStyle = 'rgba(109,90,72,' + (0.85 * (1 - fogOf(f.z))).toFixed(2) + ')';
+                    ctx.strokeStyle = 'rgba(150,160,185,' + (0.85 * (1 - fogOf(f.z))).toFixed(2) + ')';
                     ctx.lineWidth = Math.max(1, 1.6 * scale / 26);
                 }
                 ctx.beginPath();
@@ -254,35 +294,47 @@
                 var hv = Math.hypot(D[0] - A[0], D[1] - A[1]);
                 var wv = Math.hypot(B[0] - A[0], B[1] - A[1]);
                 if (hv > 13 && wv > 9) {
-                    var rows = f.win.rows, cols = f.win.cols;
+                    var rows = f.win.rows, cols = f.win.cols, seed = f.win.seed;
                     var u0 = .1, v0 = .12, du = .8 / cols, dv = .76 / rows;
                     var fw = du * .58, fh = dv * .55;
-                    ctx.fillStyle = f.winFill;
-                    ctx.beginPath();
-                    for (var ri = 0; ri < rows; ri++) {
-                        for (var ci = 0; ci < cols; ci++) {
-                            var u = u0 + ci * du + (du - fw) / 2;
-                            var v = v0 + ri * dv + (dv - fh) / 2;
-                            for (var e = 0; e < 4; e++) {
-                                var uu = u + (e === 1 || e === 2 ? fw : 0);
-                                var vv = v + (e >= 2 ? fh : 0);
-                                var bx = A[0] + (B[0] - A[0]) * uu,
-                                    by = A[1] + (B[1] - A[1]) * uu,
-                                    tx = D[0] + (C[0] - D[0]) * uu,
-                                    ty = D[1] + (C[1] - D[1]) * uu;
-                                var px = bx + (tx - bx) * vv,
-                                    py = by + (ty - by) * vv;
-                                if (e === 0) ctx.moveTo(px, py);
-                                else ctx.lineTo(px, py);
+                    for (var pass = 0; pass < 2; pass++) {
+                        ctx.fillStyle = pass ? f.litFill : f.winFill;
+                        ctx.beginPath();
+                        var any = false;
+                        for (var ri = 0; ri < rows; ri++) {
+                            for (var ci = 0; ci < cols; ci++) {
+                                var lit = ((ri * 7 + ci * 13 + seed * 29) % 10) < 2;
+                                if ((pass === 1) !== lit) continue;
+                                any = true;
+                                var u = u0 + ci * du + (du - fw) / 2;
+                                var v = v0 + ri * dv + (dv - fh) / 2;
+                                for (var e = 0; e < 4; e++) {
+                                    var uu = u + (e === 1 || e === 2 ? fw : 0);
+                                    var vv = v + (e >= 2 ? fh : 0);
+                                    var bx = A[0] + (B[0] - A[0]) * uu,
+                                        by = A[1] + (B[1] - A[1]) * uu,
+                                        tx = D[0] + (C[0] - D[0]) * uu,
+                                        ty = D[1] + (C[1] - D[1]) * uu;
+                                    var px = bx + (tx - bx) * vv,
+                                        py = by + (ty - by) * vv;
+                                    if (e === 0) ctx.moveTo(px, py);
+                                    else ctx.lineTo(px, py);
+                                }
+                                ctx.closePath();
                             }
-                            ctx.closePath();
                         }
+                        if (any) ctx.fill();
                     }
-                    ctx.fill();
                 }
             }
         }
         ctx.restore();
+        var vig = ctx.createRadialGradient(Wd / 2, Hd * 0.42, Hd * 0.3,
+                                           Wd / 2, Hd * 0.42, Math.max(Wd, Hd) * 0.78);
+        vig.addColorStop(0, 'rgba(8,10,16,0)');
+        vig.addColorStop(1, 'rgba(8,10,16,0.5)');
+        ctx.fillStyle = vig;
+        ctx.fillRect(0, 0, Wd, Hd);
     }
 
     /* ------------------------------------------------------------ sizing */
@@ -298,7 +350,7 @@
         var e = city.extent;
         cx = (e[0] + e[2]) / 2;
         cy = (e[1] + e[3]) / 2;
-        baseScale = rect.width * dpr / ((e[2] - e[0]) * 0.92);
+        baseScale = rect.width * dpr / ((e[2] - e[0]) * 0.78);
         scale = baseScale * zoom;
         originY = H * 0.20;
         frame();
@@ -343,7 +395,7 @@
         window.addEventListener('resize', resize);
     }
 
-    fetch('images/city.json?v=5')
+    fetch('images/city.json?v=6')
         .then(function (r) { return r.json(); })
         .then(function (data) {
             city = data;
