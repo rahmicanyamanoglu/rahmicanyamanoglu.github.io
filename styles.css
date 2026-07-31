@@ -79,6 +79,47 @@ header {
     position: relative;
     padding: 76px 0 62px;
     margin-bottom: 8px;
+    isolation: isolate;   /* keeps the wash and the panorama behind the content */
+}
+
+/* ---- the panning skyline behind the entrance ---------------------------
+   Two identical copies of the panorama sit side by side; translating the
+   strip by exactly half its width lands copy two where copy one began, so
+   the loop has no seam. Both edges of the drawing are plain ground, so
+   nothing is cut at the join. It is an SVG, not a video: ~4 kB, no decode
+   cost, and it scales to any display.                                    */
+.hero-pan {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 100vw;
+    margin-left: -50vw;
+    height: 66%;
+    overflow: hidden;
+    z-index: -1;
+    pointer-events: none;
+    opacity: .12;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 42%, #000 84%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 42%, #000 84%, transparent);
+}
+
+.hero-pan-strip {
+    display: flex;
+    width: max-content;
+    height: 100%;
+    animation: heroPan 120s linear infinite;
+}
+
+.hero-pan-strip img {
+    display: block;
+    height: 100%;
+    width: auto;
+    max-width: none;
+}
+
+@keyframes heroPan {
+    from { transform: translate3d(0, 0, 0); }
+    to   { transform: translate3d(-50%, 0, 0); }
 }
 
 /* a warm wash that breaks out of the container, edge to edge */
@@ -846,8 +887,12 @@ footer::before {
 
     .reveal { opacity: 1; translate: none; }
 
+    /* the blanket rule above only shortens animations — for a looping pan
+       that would spin it, so stop this one by name */
+    .hero-pan-strip { animation: none; }
+
     .profile-photo,
-    .essay-card,
+    .essay-card { transform: none !important; }
 }
 
 :focus-visible {
