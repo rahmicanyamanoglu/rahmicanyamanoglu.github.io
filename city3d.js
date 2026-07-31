@@ -20,13 +20,14 @@
     var reduced = window.matchMedia &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    var TILT = 0.94;              // radians off the ground plane
+    var TILT = 0.60;              // low enough to read facades, not a plan
     var yaw = Math.PI / 4;        // start where the flat drawing left off
     var targetYaw = yaw;
     var drag = null;
     var city = null;
     var pins = [];
     var W = 0, H = 0, dpr = 1, scale = 1, cx = 0, cy = 0, originY = 0;
+    var zoom = 1, targetZoom = 1, baseScale = 1;
 
     var LIGHT = (function () {
         var v = [-0.45, -0.72, 0.62], m = Math.hypot(v[0], v[1], v[2]);
@@ -103,7 +104,7 @@
             var x = s.x, y = s.y, w = s.w, d = s.d, h = s.h / 26;   // world z
             if (s.t === 'tree') {
                 var t = project([x, y, 0]);
-                out.push({ z: t[2], tree: t, r: 0.30 * scale });
+                out.push({ z: t[2], tree: t, r: 0.16 * scale });
                 return;
             }
             var x1 = x + w, y1 = y + d;
@@ -156,7 +157,7 @@
             if (f.tree) {
                 ctx.fillStyle = 'rgb(168,179,148)';
                 ctx.beginPath();
-                ctx.ellipse(f.tree[0], f.tree[1] - f.r * 1.5, f.r * .8, f.r * 1.1,
+                ctx.ellipse(f.tree[0], f.tree[1] - f.r * 1.15, f.r * .85, f.r * 1.25,
                             0, 0, Math.PI * 2);
                 ctx.fill();
                 continue;
@@ -210,8 +211,9 @@
         var e = city.extent;
         cx = (e[0] + e[2]) / 2;
         cy = (e[1] + e[3]) / 2;
-        scale = rect.width * dpr / ((e[2] - e[0]) * 1.48);
-        originY = H * 0.10;
+        baseScale = rect.width * dpr / ((e[2] - e[0]) * 1.16);
+        scale = baseScale * zoom;
+        originY = H * 0.18;
         frame();
     }
 
@@ -219,9 +221,11 @@
     var spinning = !reduced;
     function tick() {
         if (spinning) targetYaw += 0.0016;
-        var d = targetYaw - yaw;
-        if (Math.abs(d) > 0.0002) {
-            yaw += d * (drag ? 1 : 0.09);
+        var dy = targetYaw - yaw, dz = targetZoom - zoom;
+        if (Math.abs(dy) > 0.0002 || Math.abs(dz) > 0.0004) {
+            yaw += dy * (drag ? 1 : 0.09);
+            zoom += dz * 0.12;
+            scale = baseScale * zoom;
             frame();
         }
         requestAnimationFrame(tick);
@@ -246,6 +250,23 @@
         }
         stage.addEventListener('pointerup', release);
         stage.addEventListener('pointercancel', release);
+        stage.addEventListener('wheel', function (e) {
+            if (!e.deltaY) return;
+            e.preventDefault();
+            targetZoom = Math.max(0.75, Math.min(3.4,
+                targetZoom * (e.deltaY < 0 ? 1.12 : 0.89)));
+        }, { passive: false });
+
+        pins.forEach(function (pin, i) {
+            pin.addEventListener('click', function () {
+                var a = city.anchors[i];
+                spinning = false;
+                targetZoom = targetZoom > 1.6 ? 1 : 2.4;
+                // turn the district towards the viewer
+                targetYaw = -Math.atan2(a.y - cy, a.x - cx) + Math.PI / 2;
+            });
+        });
+
         stage.addEventListener('mouseenter', function () { spinning = false; });
         stage.addEventListener('mouseleave', function () {
             if (!reduced) spinning = true;
