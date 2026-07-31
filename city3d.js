@@ -20,12 +20,11 @@
     var reduced = window.matchMedia &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    var TILT = 0.60;              // low enough to read facades, not a plan
+    var TILT = 0.47;              // an establishing shot, not a plan
     var yaw = Math.PI / 4;        // start where the flat drawing left off
     var targetYaw = yaw;
     var drag = null;
     var city = null;
-    var pins = [];
     var W = 0, H = 0, dpr = 1, scale = 1, cx = 0, cy = 0, originY = 0;
     var zoom = 1, targetZoom = 1, baseScale = 1;
 
@@ -35,11 +34,22 @@
     })();
 
     /* ---------------------------------------------------------- palette */
-    function shade(base, lum) {
+    var BGF = [248, 243, 234];      // what distance dissolves into
+
+    /* depth of field on the cheap: aerial perspective. The further a face
+       sits, the more its colour is pulled toward the background, so the
+       skyline melts away instead of stopping at a hard edge. */
+    function fogOf(z) {
+        var t = (6 - z) / 26;
+        return t < 0 ? 0 : (t > 0.74 ? 0.74 : t);
+    }
+
+    function shade(base, lum, fog) {
         var t = Math.max(0, Math.min(1, lum));
-        return 'rgb(' + Math.round(base[0] * t) + ',' +
-                        Math.round(base[1] * t) + ',' +
-                        Math.round(base[2] * t) + ')';
+        var f = fog || 0;
+        return 'rgb(' + Math.round(base[0] * t * (1 - f) + BGF[0] * f) + ',' +
+                        Math.round(base[1] * t * (1 - f) + BGF[1] * f) + ',' +
+                        Math.round(base[2] * t * (1 - f) + BGF[2] * f) + ')';
     }
     var WALL = [214, 196, 170];
     var ROOFC = [206, 188, 160];
@@ -78,8 +88,9 @@
             var m = Math.hypot(n[0], n[1], n[2]) || 1;
             lum = faceLum([n[0] / m, n[1] / m, n[2] / m]);
         }
-        var f = { z: (a[2] + b[2] + c[2] + d[2]) / 4,
-                  pts: [a, b, c, d], fill: shade(base, lum), lum: lum };
+        var zc = (a[2] + b[2] + c[2] + d[2]) / 4;
+        var f = { z: zc, pts: [a, b, c, d],
+                  fill: shade(base, lum, fogOf(zc)), lum: lum };
         out.push(f);
         return f;
     }
@@ -90,15 +101,17 @@
        face itself, nearer walls simply cover them. */
     function glaze(f, lenW, hW, base, lum) {
         if (lenW < 0.45 || hW < 0.55) return;
+        var fog = fogOf(f.z);
+        if (fog > 0.42) return;         // too deep in the haze to resolve glass
         f.win = { rows: Math.min(10, Math.max(1, Math.round(hW / 0.5))),
                   cols: Math.min(8, Math.max(1, Math.round(lenW / 0.4))) };
-        f.winFill = shade(base, lum * 0.4);
+        f.winFill = shade(base, lum * 0.4, fog);
     }
 
     function tri(out, pts, base, lum) {
         var a = project(pts[0]), b = project(pts[1]), c = project(pts[2]);
-        out.push({ z: (a[2] + b[2] + c[2]) / 3,
-                   pts: [a, b, c], fill: shade(base, lum) });
+        var zc = (a[2] + b[2] + c[2]) / 3;
+        out.push({ z: zc, pts: [a, b, c], fill: shade(base, lum, fogOf(zc)) });
     }
 
     /* ------------------------------------------------------------ build */
@@ -172,6 +185,11 @@
     function frame() {
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, W, H);
+        var sky = ctx.createLinearGradient(0, 0, 0, H / dpr * 0.55);
+        sky.addColorStop(0, 'rgba(243,233,219,0.85)');
+        sky.addColorStop(1, 'rgba(243,233,219,0)');
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, W / dpr, H / dpr * 0.55);
         ctx.save();
         ctx.translate(W / 2, H / 2);
 
@@ -193,7 +211,7 @@
                 if (!vis) continue;
             }
             if (f.tree) {
-                ctx.fillStyle = 'rgb(168,179,148)';
+                ctx.fillStyle = shade([168, 179, 148], 1, fogOf(f.z));
                 ctx.beginPath();
                 ctx.ellipse(f.tree[0], f.tree[1] - f.r * 1.15, f.r * .85, f.r * 1.25,
                             0, 0, Math.PI * 2);
@@ -201,7 +219,7 @@
                 continue;
             }
             if (f.dome) {
-                ctx.fillStyle = 'rgb(206,188,160)';
+                ctx.fillStyle = shade([206, 188, 160], 1, fogOf(f.z));
                 ctx.beginPath();
                 ctx.ellipse(f.dome[0], f.dome[1], f.r, f.r * 1.15, 0, Math.PI, Math.PI * 2);
                 ctx.fill();
@@ -213,7 +231,7 @@
                     ctx.lineWidth = Math.max(1, 0.055 * scale);
                     ctx.setLineDash([0.34 * scale, 0.42 * scale]);
                 } else {
-                    ctx.strokeStyle = 'rgba(109,90,72,.85)';
+                    ctx.strokeStyle = 'rgba(109,90,72,' + (0.85 * (1 - fogOf(f.z))).toFixed(2) + ')';
                     ctx.lineWidth = Math.max(1, 1.6 * scale / 26);
                 }
                 ctx.beginPath();
@@ -265,16 +283,6 @@
             }
         }
         ctx.restore();
-        placePins();
-    }
-
-    function placePins() {
-        for (var i = 0; i < pins.length; i++) {
-            var a = city.anchors[i];
-            var p = project([a.x, a.y, a.z / 26]);
-            pins[i].style.left = ((W / 2 + p[0]) / dpr).toFixed(1) + 'px';
-            pins[i].style.top = ((H / 2 + p[1]) / dpr).toFixed(1) + 'px';
-        }
     }
 
     /* ------------------------------------------------------------ sizing */
@@ -282,17 +290,17 @@
         var rect = stage.getBoundingClientRect();
         dpr = Math.min(window.devicePixelRatio || 1, 2);
         W = Math.round(rect.width * dpr);
-        H = Math.round(rect.width * 0.62 * dpr);
+        H = Math.round(rect.width * 0.7 * dpr);
         canvas.width = W;
         canvas.height = H;
         canvas.style.width = '100%';
-        canvas.style.height = (rect.width * 0.62) + 'px';
+        canvas.style.height = (rect.width * 0.7) + 'px';
         var e = city.extent;
         cx = (e[0] + e[2]) / 2;
         cy = (e[1] + e[3]) / 2;
-        baseScale = rect.width * dpr / ((e[2] - e[0]) * 1.16);
+        baseScale = rect.width * dpr / ((e[2] - e[0]) * 0.92);
         scale = baseScale * zoom;
-        originY = H * 0.18;
+        originY = H * 0.20;
         frame();
     }
 
@@ -313,7 +321,6 @@
     /* --------------------------------------------------------- controls */
     function bind() {
         stage.addEventListener('pointerdown', function (e) {
-            if (e.target.closest('.city-pin')) return;
             drag = { x: e.clientX, yaw: targetYaw };
             spinning = false;
             stage.setPointerCapture(e.pointerId);
@@ -329,23 +336,6 @@
         }
         stage.addEventListener('pointerup', release);
         stage.addEventListener('pointercancel', release);
-        stage.addEventListener('wheel', function (e) {
-            if (!e.deltaY) return;
-            e.preventDefault();
-            targetZoom = Math.max(0.75, Math.min(3.4,
-                targetZoom * (e.deltaY < 0 ? 1.12 : 0.89)));
-        }, { passive: false });
-
-        pins.forEach(function (pin, i) {
-            pin.addEventListener('click', function () {
-                var a = city.anchors[i];
-                spinning = false;
-                targetZoom = targetZoom > 1.6 ? 1 : 2.4;
-                // turn the district towards the viewer
-                targetYaw = -Math.atan2(a.y - cy, a.x - cx) + Math.PI / 2;
-            });
-        });
-
         stage.addEventListener('mouseenter', function () { spinning = false; });
         stage.addEventListener('mouseleave', function () {
             if (!reduced) spinning = true;
@@ -353,12 +343,10 @@
         window.addEventListener('resize', resize);
     }
 
-    fetch('images/city.json?v=3')
+    fetch('images/city.json?v=5')
         .then(function (r) { return r.json(); })
         .then(function (data) {
             city = data;
-            pins = Array.prototype.slice.call(stage.querySelectorAll('.city-pin'));
-            if (pins.length !== city.anchors.length) return;   // markup drifted
             var img = stage.querySelector('img');
             if (img) img.remove();
             stage.insertBefore(canvas, stage.firstChild);
