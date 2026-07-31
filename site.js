@@ -87,6 +87,33 @@
         });
     }
 
+    /* ------------------------------------------- layered city parallax */
+    function initCity() {
+        var city = document.querySelector('.hero-city');
+        if (!city) return;
+        var header = city.closest('header');
+        if (!header || reduced) return;
+        if (!window.matchMedia || !window.matchMedia('(hover: hover)').matches) return;
+
+        var frame = null;
+
+        header.addEventListener('mousemove', function (e) {
+            if (frame) return;
+            frame = requestAnimationFrame(function () {
+                frame = null;
+                var r = header.getBoundingClientRect();
+                // -1 at the left edge, +1 at the right; each band scales it
+                var mx = ((e.clientX - r.left) / r.width - 0.5) * 2;
+                city.style.setProperty('--mx', mx.toFixed(3));
+            });
+        });
+
+        header.addEventListener('mouseleave', function () {
+            if (frame) { cancelAnimationFrame(frame); frame = null; }
+            city.style.setProperty('--mx', '0');
+        });
+    }
+
     /* ------------------------------------------------ header parallax */
     function initParallax() {
         if (reduced) return;
@@ -111,6 +138,7 @@
     function boot() {
         initReveal();
         initTilt();
+        initCity();
         initParallax();
     }
 

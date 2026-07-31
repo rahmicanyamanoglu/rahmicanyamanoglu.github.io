@@ -82,44 +82,86 @@ header {
     isolation: isolate;   /* keeps the wash and the panorama behind the content */
 }
 
-/* ---- the panning skyline behind the entrance ---------------------------
-   Two identical copies of the panorama sit side by side; translating the
-   strip by exactly half its width lands copy two where copy one began, so
-   the loop has no seam. Both edges of the drawing are plain ground, so
-   nothing is cut at the join. It is an SVG, not a video: ~4 kB, no decode
-   cost, and it scales to any display.                                    */
-.hero-pan {
+/* ---- the layered city behind the entrance -------------------------------
+   One band per city, stacked bottom-to-top in the order he lived in them.
+   The earliest sits lowest, largest and darkest and so reads nearest; each
+   later city steps up, smaller and fainter. Buildings rise well past their
+   own band into the one above, which is what makes six strips read as a
+   single city. Total weight ~5 kB of SVG.                                */
+header:has(.hero-city) { padding-bottom: 132px; }
+
+.hero-city {
     position: absolute;
     left: 50%;
     bottom: 0;
     width: 100vw;
     margin-left: -50vw;
-    height: 66%;
+    height: 92%;
     overflow: hidden;
     z-index: -1;
-    pointer-events: none;
-    opacity: .12;
-    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 42%, #000 84%, transparent);
-    mask-image: linear-gradient(to bottom, transparent, #000 42%, #000 84%, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 34%, #000 92%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 34%, #000 92%, transparent);
 }
 
-.hero-pan-strip {
-    display: flex;
-    width: max-content;
-    height: 100%;
-    animation: heroPan 120s linear infinite;
+.city-layer {
+    position: absolute;
+    left: -4%;
+    width: 108%;
+    bottom: calc(var(--depth) * 30px);
+    opacity: var(--o);
+    /* nearer bands travel further, so the parallax reads as depth */
+    transform: translate3d(calc(var(--mx, 0) * var(--par) * 14px), 0, 0);
+    transition: transform .9s cubic-bezier(.16, .8, .3, 1), opacity .5s var(--ease);
+    will-change: transform;
 }
 
-.hero-pan-strip img {
+.city-layer img {
     display: block;
-    height: 100%;
-    width: auto;
-    max-width: none;
+    width: 100%;
+    height: auto;
 }
 
-@keyframes heroPan {
-    from { transform: translate3d(0, 0, 0); }
-    to   { transform: translate3d(-50%, 0, 0); }
+/* the label sits above its own band, in the sky that band leaves free */
+.city-tag {
+    position: absolute;
+    left: var(--x);
+    bottom: calc(var(--depth) * 30px + 6px);
+    transform: translate3d(calc(var(--mx, 0) * 6px), 6px, 0);
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    font-size: .58rem;
+    font-weight: 600;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    opacity: 0;
+    white-space: nowrap;
+    transition: opacity .45s var(--ease), transform .45s var(--ease);
+}
+
+.city-tag i {
+    font-style: normal;
+    font-weight: 500;
+    letter-spacing: .1em;
+    color: var(--muted);
+    font-size: .92em;
+}
+
+/* the city only names itself when the reader goes looking */
+header:hover .city-tag,
+header:focus-within .city-tag {
+    opacity: 1;
+    transform: translate3d(calc(var(--mx, 0) * 6px), 0, 0);
+}
+
+header:hover .city-layer { opacity: calc(var(--o) * 1.5); }
+
+@media (max-width: 760px) {
+    header:has(.hero-city) { padding-bottom: 76px; }
+    .hero-city { height: 78%; }
+    .city-layer { bottom: calc(var(--depth) * 17px); }
+    .city-tag { display: none; }
 }
 
 /* a warm wash that breaks out of the container, edge to edge */
@@ -963,9 +1005,8 @@ footer::before {
 
     .reveal { opacity: 1; translate: none; }
 
-    /* the blanket rule above only shortens animations — for a looping pan
-       that would spin it, so stop this one by name */
-    .hero-pan-strip { animation: none; }
+    .city-layer,
+    .city-tag { transform: none !important; }
 
     .profile-photo,
     .essay-card { transform: none !important; }
