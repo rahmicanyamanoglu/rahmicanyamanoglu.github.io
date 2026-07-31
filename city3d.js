@@ -46,7 +46,7 @@
     var PITCH = [198, 172, 140];
     var PAD = [229, 220, 204];
     var GRND = [239, 232, 219];
-    var LEAF = [168, 179, 148];
+    var ROADC = [221, 213, 199];
 
     /* ------------------------------------------------------- projection */
     function project(p) {
@@ -78,8 +78,21 @@
             var m = Math.hypot(n[0], n[1], n[2]) || 1;
             lum = faceLum([n[0] / m, n[1] / m, n[2] / m]);
         }
-        out.push({ z: (a[2] + b[2] + c[2] + d[2]) / 4,
-                   pts: [a, b, c, d], fill: shade(base, lum) });
+        var f = { z: (a[2] + b[2] + c[2] + d[2]) / 4,
+                  pts: [a, b, c, d], fill: shade(base, lum), lum: lum };
+        out.push(f);
+        return f;
+    }
+
+    /* A grid of windows on a wall. The projection is affine, so bilinear
+       interpolation of the four projected corners lands every window exactly
+       on the wall plane — no extra faces, no sorting cost. Painted with the
+       face itself, nearer walls simply cover them. */
+    function glaze(f, lenW, hW, base, lum) {
+        if (lenW < 0.45 || hW < 0.55) return;
+        f.win = { rows: Math.min(10, Math.max(1, Math.round(hW / 0.5))),
+                  cols: Math.min(8, Math.max(1, Math.round(lenW / 0.4))) };
+        f.winFill = shade(base, lum * 0.4);
     }
 
     function tri(out, pts, base, lum) {
@@ -94,9 +107,20 @@
         var e = city.extent;
         quad(ground, [[e[0], e[1], 0], [e[2], e[1], 0], [e[2], e[3], 0], [e[0], e[3], 0]],
              GRND, 1);
+        (city.roads || []).forEach(function (r) {
+            quad(ground, [[r[0], r[1], .015], [r[0] + r[2], r[1], .015],
+                          [r[0] + r[2], r[1] + r[3], .015], [r[0], r[1] + r[3], .015]],
+                 ROADC, 1);
+            var vert = r[3] > r[2];
+            var m1 = vert ? [r[0] + r[2] / 2, r[1], .02] : [r[0], r[1] + r[3] / 2, .02];
+            var m2 = vert ? [r[0] + r[2] / 2, r[1] + r[3], .02]
+                          : [r[0] + r[2], r[1] + r[3] / 2, .02];
+            ground.push({ line: [project(m1), project(m2)], dash: true });
+        });
+
         city.plots.forEach(function (p) {
-            quad(ground, [[p[0], p[1], .01], [p[0] + p[2], p[1], .01],
-                          [p[0] + p[2], p[1] + p[3], .01], [p[0], p[1] + p[3], .01]],
+            quad(ground, [[p[0], p[1], .03], [p[0] + p[2], p[1], .03],
+                          [p[0] + p[2], p[1] + p[3], .03], [p[0], p[1] + p[3], .03]],
                  PAD, 1);
         });
 
@@ -108,11 +132,14 @@
                 return;
             }
             var x1 = x + w, y1 = y + d;
-            // four walls, wound so the outward face survives the cull
-            quad(out, [[x, y, 0], [x1, y, 0], [x1, y, h], [x, y, h]], WALL);
-            quad(out, [[x1, y, 0], [x1, y1, 0], [x1, y1, h], [x1, y, h]], WALL);
-            quad(out, [[x1, y1, 0], [x, y1, 0], [x, y1, h], [x1, y1, h]], WALL);
-            quad(out, [[x, y1, 0], [x, y, 0], [x, y, h], [x, y1, h]], WALL);
+            var f1 = quad(out, [[x, y, 0], [x1, y, 0], [x1, y, h], [x, y, h]], WALL);
+            var f2 = quad(out, [[x1, y, 0], [x1, y1, 0], [x1, y1, h], [x1, y, h]], WALL);
+            var f3 = quad(out, [[x1, y1, 0], [x, y1, 0], [x, y1, h], [x1, y1, h]], WALL);
+            var f4 = quad(out, [[x, y1, 0], [x, y, 0], [x, y, h], [x, y1, h]], WALL);
+            glaze(f1, w, h, WALL, f1.lum);
+            glaze(f2, d, h, WALL, f2.lum);
+            glaze(f3, w, h, WALL, f3.lum);
+            glaze(f4, d, h, WALL, f4.lum);
 
             if (s.t === 'pitch') {
                 var r = s.r / 26, mx = x + w / 2;
@@ -152,8 +179,19 @@
         built.solid.sort(function (a, b) { return a.z - b.z; });
         var list = built.ground.concat(built.solid);
 
+        var bx = W / dpr / 2 + 30, by = H / dpr / 2 + 30;
         for (var i = 0; i < list.length; i++) {
             var f = list[i];
+            if (f.pts) {
+                var vis = false;
+                for (var vk = 0; vk < f.pts.length; vk++) {
+                    var vp = f.pts[vk];
+                    if (vp[0] > -bx && vp[0] < bx && vp[1] > -by && vp[1] < by) {
+                        vis = true; break;
+                    }
+                }
+                if (!vis) continue;
+            }
             if (f.tree) {
                 ctx.fillStyle = 'rgb(168,179,148)';
                 ctx.beginPath();
@@ -170,12 +208,19 @@
                 continue;
             }
             if (f.line) {
-                ctx.strokeStyle = 'rgba(109,90,72,.85)';
-                ctx.lineWidth = Math.max(1, 1.6 * scale / 26);
+                if (f.dash) {
+                    ctx.strokeStyle = 'rgba(246,241,230,.85)';
+                    ctx.lineWidth = Math.max(1, 0.055 * scale);
+                    ctx.setLineDash([0.34 * scale, 0.42 * scale]);
+                } else {
+                    ctx.strokeStyle = 'rgba(109,90,72,.85)';
+                    ctx.lineWidth = Math.max(1, 1.6 * scale / 26);
+                }
                 ctx.beginPath();
                 ctx.moveTo(f.line[0][0], f.line[0][1]);
                 ctx.lineTo(f.line[1][0], f.line[1][1]);
                 ctx.stroke();
+                ctx.setLineDash([]);
                 continue;
             }
             ctx.fillStyle = f.fill;
@@ -184,6 +229,40 @@
             for (var k = 1; k < f.pts.length; k++) ctx.lineTo(f.pts[k][0], f.pts[k][1]);
             ctx.closePath();
             ctx.fill();
+
+            if (f.win) {
+                var A = f.pts[0], B = f.pts[1], C = f.pts[2], D = f.pts[3];
+                // skip when the wall is too small on screen to resolve glass
+                var hv = Math.hypot(D[0] - A[0], D[1] - A[1]);
+                var wv = Math.hypot(B[0] - A[0], B[1] - A[1]);
+                if (hv > 13 && wv > 9) {
+                    var rows = f.win.rows, cols = f.win.cols;
+                    var u0 = .1, v0 = .12, du = .8 / cols, dv = .76 / rows;
+                    var fw = du * .58, fh = dv * .55;
+                    ctx.fillStyle = f.winFill;
+                    ctx.beginPath();
+                    for (var ri = 0; ri < rows; ri++) {
+                        for (var ci = 0; ci < cols; ci++) {
+                            var u = u0 + ci * du + (du - fw) / 2;
+                            var v = v0 + ri * dv + (dv - fh) / 2;
+                            for (var e = 0; e < 4; e++) {
+                                var uu = u + (e === 1 || e === 2 ? fw : 0);
+                                var vv = v + (e >= 2 ? fh : 0);
+                                var bx = A[0] + (B[0] - A[0]) * uu,
+                                    by = A[1] + (B[1] - A[1]) * uu,
+                                    tx = D[0] + (C[0] - D[0]) * uu,
+                                    ty = D[1] + (C[1] - D[1]) * uu;
+                                var px = bx + (tx - bx) * vv,
+                                    py = by + (ty - by) * vv;
+                                if (e === 0) ctx.moveTo(px, py);
+                                else ctx.lineTo(px, py);
+                            }
+                            ctx.closePath();
+                        }
+                    }
+                    ctx.fill();
+                }
+            }
         }
         ctx.restore();
         placePins();
@@ -274,7 +353,7 @@
         window.addEventListener('resize', resize);
     }
 
-    fetch('images/city.json')
+    fetch('images/city.json?v=3')
         .then(function (r) { return r.json(); })
         .then(function (data) {
             city = data;
