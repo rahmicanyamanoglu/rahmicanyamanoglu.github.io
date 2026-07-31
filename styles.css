@@ -626,6 +626,35 @@ h3.subsection:first-of-type { margin-top: 0; }
     .city-card { max-width: 190px; }
 }
 
+/* --- turned in three dimensions when the canvas takes over --------------- */
+.city-stage > canvas {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    touch-action: pan-y;          /* let the page still scroll on a phone */
+}
+
+.city-stage.is-3d { cursor: grab; }
+.city-stage.is-turning { cursor: grabbing; }
+
+.city-hint {
+    position: absolute;
+    right: 16px;
+    bottom: 14px;
+    margin: 0;
+    font-size: .6rem;
+    font-weight: 600;
+    letter-spacing: .17em;
+    text-transform: uppercase;
+    color: var(--muted);
+    opacity: 0;
+    transition: opacity .4s var(--ease);
+    pointer-events: none;
+}
+
+.city-stage.is-3d .city-hint { opacity: .75; }
+.city-stage.is-turning .city-hint { opacity: 0; }
+
 /* ============================================================
    Timeline
    ============================================================ */
