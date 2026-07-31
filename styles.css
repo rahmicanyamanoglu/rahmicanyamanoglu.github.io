@@ -500,57 +500,6 @@ h3.subsection:first-of-type { margin-top: 0; }
 .conf-venue { font-size: .88rem; color: var(--muted); }
 
 /* ============================================================
-   The city — every district a place he lived, every landmark a thing
-   he did. Markers sit over the drawing at coordinates the generator
-   exported, so the SVG stays a cached image rather than inline markup.
-   ============================================================ */
-
-.city-stage {
-    position: relative;
-    margin-top: 26px;
-    border: 1px solid #262e42;
-    border-radius: 12px;
-    background: #12161f;      /* the scene is a night scene; the card is too */
-    padding: 6px;
-    box-shadow: 0 2px 6px rgba(10, 13, 22, .2), 0 18px 44px rgba(10, 13, 22, .18);
-}
-
-.city-stage > img { display: block; width: 100%; height: auto; border-radius: 6px; }
-
-@media (max-width: 760px) {
-    .city-stage { padding: 5px; }
-}
-
-/* --- turned in three dimensions when the canvas takes over --------------- */
-.city-stage > canvas {
-    display: block;
-    width: 100%;
-    border-radius: 6px;
-    touch-action: pan-y;          /* let the page still scroll on a phone */
-}
-
-.city-stage.is-3d { cursor: grab; }
-.city-stage.is-turning { cursor: grabbing; }
-
-.city-hint {
-    position: absolute;
-    right: 16px;
-    bottom: 14px;
-    margin: 0;
-    font-size: .6rem;
-    font-weight: 600;
-    letter-spacing: .17em;
-    text-transform: uppercase;
-    color: #97a1b8;
-    opacity: 0;
-    transition: opacity .4s var(--ease);
-    pointer-events: none;
-}
-
-.city-stage.is-3d .city-hint { opacity: .75; }
-.city-stage.is-turning .city-hint { opacity: 0; }
-
-/* ============================================================
    Timeline
    ============================================================ */
 
