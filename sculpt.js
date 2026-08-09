@@ -1,7 +1,9 @@
-/* The entrance sculpture: ~1800 points that gather out of scatter into the
-   buildings he loves, hold, then drift into the next — Collemaggio, the
-   Porte de Darwin, the Cité du Vin, Galata Bridge (whose gull takes off),
-   Lund Cathedral.
+/* The entrance sculpture: thousands of points that gather out of scatter
+   into the buildings he loves, hold, then drift into the next — Galata
+   Bridge (gull, strollers, fishermen), the Yeşilyurt shore with its
+   balloon garland, Bodrum Castle and its gulets, Lund Cathedral, Kärnan
+   through the gateway, the Dom with its cyclists, Collemaggio with a
+   frisbee arcing over the lawn, the Porte de Darwin.
 
    No library. Each particle spring-follows its target; morphs happen by
    retargeting particles one by one over a staggered window, so the swarm
@@ -149,8 +151,10 @@
 
         var done = true;
         /* actors: each group carries its own motion, computed once per frame.
-           kinds — 0 the gull's loop · 1 sway on the wind · 2 drift and bob
-                   3 ride the road (wrapping, so riders keep coming) */
+           kinds — 0 the gull's loop · 1 sway on the wind · 2 stroll there
+                   and back · 3 ride there and back · 4 the frisbee's arc.
+           2 and 3 fold their path into a triangle wave: reaching the end,
+           they turn and come back — no wrap, so nobody ever sprints. */
         var acts = data.shapes[shape].a || [];
         var aox = [], aoy = [];
         for (var ai = 0; ai < acts.length; ai++) {
@@ -163,11 +167,15 @@
                 ox_ = Math.sin(t * 0.9 + ph) * W * 0.011;
                 oy_ = Math.sin(t * 1.7 + ph) * H * 0.006
                     - Math.abs(Math.sin(t * 0.45 + ph)) * H * 0.005;
+            } else if (kind === 4) {
+                var u4 = Math.sin(t * sp + ph);
+                ox_ = u4 * rg * W;
+                oy_ = -(1 - u4 * u4) * H * 0.05;
             } else {
                 var mult = kind === 3 ? 0.25 : 0.1;
                 var span = rg * W;
-                ox_ = (((t * sp * W * mult + ph * 113) % span) + span) % span
-                    - span / 2;
+                var u_ = (((t * sp * W * mult + ph * 113) % span) + span) % span;
+                ox_ = (u_ < span / 2 ? u_ : span - u_) * 2 - span / 2;
                 oy_ = kind === 2 ? Math.sin(t * 1.6 + ph) * H * 0.006 : 0;
             }
             aox.push(ox_); aoy.push(oy_);
@@ -190,6 +198,7 @@
                         gx += Math.sin(t * 2.3 + i * 1.3) * 1.2 * dpr;
                         gy += Math.cos(t * 2.9 + i) * 1.0 * dpr;
                     } else if (k_ === 3) gy += Math.sin(t * 10 + i) * 0.5 * dpr;
+                    else if (k_ === 4) gy += Math.sin(t * 9 + i * 2) * 0.5 * dpr;
                     break;
                 }
             }
@@ -258,7 +267,7 @@
         }
     }
 
-    fetch('images/sculpt.json?v=6')
+    fetch('images/sculpt.json?v=7')
         .then(function (r) { return r.json(); })
         .then(function (d) {
             data = d;
