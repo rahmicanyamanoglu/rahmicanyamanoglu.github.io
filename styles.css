@@ -210,25 +210,39 @@ nav a.active { color: var(--ink); }
 nav a.active::after { width: 100%; background: var(--gold); }
 
 /* ============================================================
-   The entrance sculpture — points that gather into buildings
+   The entrance sculpture — the whole entrance is the canvas.
+   sculpt.js marks the header once data loads; without JavaScript the
+   header keeps its ordinary height and the empty stage costs nothing.
    ============================================================ */
 
-.sculpt {
-    display: none;                /* revealed by sculpt.js once data loads */
-    padding: 42px 0 16px;
-    border-bottom: 1px solid var(--hairline);
+header.sculpt-on {
+    min-height: clamp(560px, 96vh, 1180px);
+    padding-bottom: 96px;
 }
 
-.sculpt.on { display: block; }
+.sculpt-stage {
+    position: absolute;
+    inset: 0;
+    left: 50%;
+    width: 100vw;
+    margin-left: -50vw;
+    overflow: hidden;
+    z-index: -1;              /* behind the name and nav, above the wash */
+    /* keep the dust from crowding the name at the very top */
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 16%);
+    mask-image: linear-gradient(to bottom, transparent, #000 16%);
+}
 
-.sculpt-stage { position: relative; }
-
-.sculpt-stage canvas { display: block; width: 100%; }
+.sculpt-stage canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
 
 .sculpt-cap {
     position: absolute;
-    right: 4px;
-    bottom: 6px;
+    right: clamp(20px, 5vw, 64px);
+    bottom: 22px;
     margin: 0;
     text-align: right;
     line-height: 1.4;
@@ -239,7 +253,7 @@ nav a.active::after { width: 100%; background: var(--gold); }
 .sculpt-cap b {
     display: block;
     font-family: 'Cormorant Garamond', serif;
-    font-size: 1.04rem;
+    font-size: 1.08rem;
     font-weight: 600;
     color: var(--ink);
 }
