@@ -20,12 +20,13 @@
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     var SPREAD = 1100;        // ms over which particles peel off, one by one
-    /* modern-art ink: mostly charcoal, terracotta accents, a little slate */
-    var COLORS = ['rgba(42,42,51,', 'rgba(193,88,41,',
-                  'rgba(96,110,138,', 'rgba(28,28,34,'];
-    /* a whisper of colour behind each building; suitcases stay neutral */
-    var TINTS = [[214,160,150], [198,164,116], [160,102,122],
-                 [124,152,182], [142,152,170], null, null];
+    /* ink and cobalt: charcoal majority, blue accents, pale slate depth */
+    var COLORS = ['rgba(40,42,52,', 'rgba(58,84,164,',
+                  'rgba(120,138,170,', 'rgba(24,26,34,'];
+    /* a whisper of tinted air behind each scene, all in one cool family */
+    var TINTS = [[140,160,186], [148,168,190], [136,164,182],
+                 [150,160,176], [156,166,184], [148,156,178],
+                 [186,174,166], [180,170,152], [168,158,172]];
 
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
@@ -53,12 +54,21 @@
         canvas.width = Math.round(w * dpr);
         canvas.height = Math.round(h * dpr);
         W = canvas.width; H = canvas.height;
-        // the building fills the frame and stands on its floor
-        var s = Math.min(W * 0.94 / data.w, H * 0.85 / data.h);
+        // the sculpture lives strictly below the name and nav: measure where
+        // the header text ends and fit the scene into what remains
+        var topSafe = H * 0.18;
+        var hc = document.querySelector('.header-content');
+        if (hc) {
+            var hr = hc.getBoundingClientRect(), sr = host.getBoundingClientRect();
+            topSafe = Math.max(topSafe,
+                Math.min(H * 0.55, (hr.bottom - sr.top + 18) * dpr));
+        }
+        var avail = H - topSafe - H * 0.04;
+        var s = Math.min(W * 0.97 / data.w, avail / data.h);
         sx = sy = s;
         ox = (W - data.w * s) / 2;
         oy = H - data.h * s - H * 0.03;
-        sizeScale = Math.max(0.7, Math.min(2.2, s * 0.92));
+        sizeScale = Math.max(0.7, Math.min(2.2, s * 1.15));
     }
 
     function targetOf(i, si) {
@@ -139,12 +149,6 @@
 
         var done = true;
         var g = data.shapes[shape].g;    // gull start index, if this is Galata
-        var slideX = 0, bobY = 0;
-        if (!data.shapes[shape].n) {     // a suitcase: it travels as it holds
-            var span = data.seq[seqPos][1] + SPREAD + 900;
-            slideX = ((now - stepStart) / span - 0.5) * W * 0.34;
-            bobY = Math.sin(t * 2.4) * H * 0.008;
-        }
         for (var i = 0; i < K; i++) {
             if (morphing && switchAt[i] && now >= switchAt[i]) {
                 var tt = targetOf(i, shape);
@@ -153,7 +157,7 @@
             }
             if (switchAt[i]) done = false;
 
-            var gx = tx[i] + slideX, gy = ty[i] + bobY;
+            var gx = tx[i], gy = ty[i];
             if (g !== undefined && i >= g) {
                 // the gull leaves the bridge: a slow loop over the water,
                 // wings beating around its own centre line
@@ -183,10 +187,8 @@
         if (morphing && done) {
             morphing = false;
             phaseStart = now;
-            if (data.shapes[shape].n) {
-                setCaption(shape);
-                cap.classList.remove('off');
-            }
+            setCaption(shape);
+            cap.classList.remove('off');
         }
 
         draw(t);
@@ -227,7 +229,7 @@
         }
     }
 
-    fetch('images/sculpt.json?v=2')
+    fetch('images/sculpt.json?v=4')
         .then(function (r) { return r.json(); })
         .then(function (d) {
             data = d;

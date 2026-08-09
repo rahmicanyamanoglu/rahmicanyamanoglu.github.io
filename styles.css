@@ -216,8 +216,8 @@ nav a.active::after { width: 100%; background: var(--gold); }
    ============================================================ */
 
 header.sculpt-on {
-    min-height: clamp(560px, 96vh, 1180px);
-    padding-bottom: 96px;
+    min-height: clamp(520px, 84vh, 1020px);
+    padding-bottom: 84px;
 }
 
 .sculpt-stage {
