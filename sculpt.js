@@ -148,7 +148,30 @@
         if (!morphing && now - phaseStart > data.seq[seqPos][1]) scheduleMorph(now);
 
         var done = true;
-        var g = data.shapes[shape].g;    // gull start index, if this is Galata
+        /* actors: each group carries its own motion, computed once per frame.
+           kinds — 0 the gull's loop · 1 sway on the wind · 2 drift and bob
+                   3 ride the road (wrapping, so riders keep coming) */
+        var acts = data.shapes[shape].a || [];
+        var aox = [], aoy = [];
+        for (var ai = 0; ai < acts.length; ai++) {
+            var A = acts[ai], kind = A[2], sp = A[3], ph = A[4], rg = A[5];
+            var ox_ = 0, oy_ = 0;
+            if (kind === 0) {
+                ox_ = Math.sin(t * 0.33) * W * 0.11;
+                oy_ = Math.sin(t * 0.66) * H * 0.09 - H * 0.02;
+            } else if (kind === 1) {
+                ox_ = Math.sin(t * 0.9 + ph) * W * 0.011;
+                oy_ = Math.sin(t * 1.7 + ph) * H * 0.006
+                    - Math.abs(Math.sin(t * 0.45 + ph)) * H * 0.005;
+            } else {
+                var mult = kind === 3 ? 0.25 : 0.1;
+                var span = rg * W;
+                ox_ = (((t * sp * W * mult + ph * 113) % span) + span) % span
+                    - span / 2;
+                oy_ = kind === 2 ? Math.sin(t * 1.6 + ph) * H * 0.006 : 0;
+            }
+            aox.push(ox_); aoy.push(oy_);
+        }
         for (var i = 0; i < K; i++) {
             if (morphing && switchAt[i] && now >= switchAt[i]) {
                 var tt = targetOf(i, shape);
@@ -158,16 +181,22 @@
             if (switchAt[i]) done = false;
 
             var gx = tx[i], gy = ty[i];
-            if (g !== undefined && i >= g) {
-                // the gull leaves the bridge: a slow loop over the water,
-                // wings beating around its own centre line
-                gx += Math.sin(t * 0.33) * W * 0.11;
-                gy += Math.sin(t * 0.66) * H * 0.09 - H * 0.02;
-                gy += Math.sin(t * 7 + i) * 0.6 * dpr;
+            for (var aj = 0; aj < acts.length; aj++) {
+                if (i >= acts[aj][0] && i < acts[aj][1]) {
+                    gx += aox[aj]; gy += aoy[aj];
+                    var k_ = acts[aj][2];
+                    if (k_ === 0) gy += Math.sin(t * 7 + i) * 0.6 * dpr;
+                    else if (k_ === 1) {
+                        gx += Math.sin(t * 2.3 + i * 1.3) * 1.2 * dpr;
+                        gy += Math.cos(t * 2.9 + i) * 1.0 * dpr;
+                    } else if (k_ === 3) gy += Math.sin(t * 10 + i) * 0.5 * dpr;
+                    break;
+                }
             }
-            // the breathing wander
-            gx += Math.sin(t * wobB[i] + wobA[i]) * 1.6 * dpr;
-            gy += Math.cos(t * wobB[i] * 0.83 + wobA[i] * 1.7) * 1.6 * dpr;
+            // the breathing wander, its amplitude itself breathing slowly
+            var amp = (1 + 0.35 * Math.sin(t * 0.4 + wobA[i])) * 2.0 * dpr;
+            gx += Math.sin(t * wobB[i] + wobA[i]) * amp;
+            gy += Math.cos(t * wobB[i] * 0.83 + wobA[i] * 1.7) * amp;
 
             // pointer pushes the dust aside
             var dx = px[i] - mouseX, dy = py[i] - mouseY;
@@ -229,7 +258,7 @@
         }
     }
 
-    fetch('images/sculpt.json?v=4')
+    fetch('images/sculpt.json?v=5')
         .then(function (r) { return r.json(); })
         .then(function (d) {
             data = d;
