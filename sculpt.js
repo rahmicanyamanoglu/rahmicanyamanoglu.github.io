@@ -54,12 +54,21 @@
         canvas.width = Math.round(w * dpr);
         canvas.height = Math.round(h * dpr);
         W = canvas.width; H = canvas.height;
-        // the building fills the frame and stands on its floor
-        var s = Math.min(W * 0.94 / data.w, H * 0.85 / data.h);
+        // the sculpture lives strictly below the name and nav: measure where
+        // the header text ends and fit the scene into what remains
+        var topSafe = H * 0.18;
+        var hc = document.querySelector('.header-content');
+        if (hc) {
+            var hr = hc.getBoundingClientRect(), sr = host.getBoundingClientRect();
+            topSafe = Math.max(topSafe,
+                Math.min(H * 0.55, (hr.bottom - sr.top + 18) * dpr));
+        }
+        var avail = H - topSafe - H * 0.04;
+        var s = Math.min(W * 0.97 / data.w, avail / data.h);
         sx = sy = s;
         ox = (W - data.w * s) / 2;
         oy = H - data.h * s - H * 0.03;
-        sizeScale = Math.max(0.7, Math.min(2.2, s * 0.92));
+        sizeScale = Math.max(0.7, Math.min(2.2, s * 1.15));
     }
 
     function targetOf(i, si) {
@@ -220,7 +229,7 @@
         }
     }
 
-    fetch('images/sculpt.json?v=3')
+    fetch('images/sculpt.json?v=4')
         .then(function (r) { return r.json(); })
         .then(function (d) {
             data = d;
