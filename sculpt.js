@@ -19,10 +19,13 @@
     var reduced = window.matchMedia &&
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    var HOLD = 5200;          // ms a building stands before dissolving
     var SPREAD = 1100;        // ms over which particles peel off, one by one
-    var COLORS = ['rgba(139,69,19,', 'rgba(184,145,47,',
-                  'rgba(109,90,72,', 'rgba(165,90,31,'];
+    /* modern-art ink: mostly charcoal, terracotta accents, a little slate */
+    var COLORS = ['rgba(42,42,51,', 'rgba(193,88,41,',
+                  'rgba(96,110,138,', 'rgba(28,28,34,'];
+    /* a whisper of colour behind each building; suitcases stay neutral */
+    var TINTS = [[214,160,150], [198,164,116], [160,102,122],
+                 [124,152,182], [142,152,170], null, null];
 
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
@@ -35,26 +38,27 @@
     var data = null, K = 0;
     var px, py, tx, ty;                 // positions and targets
     var hue, size, alpha, kspr, wobA, wobB, switchAt;
-    var shape = 0, phaseStart = 0, morphing = false;
+    var seqPos = 0, shape = 0, phaseStart = 0, stepStart = 0, morphing = false;
+    var tintFrom = null, tintTo = null, tintT0 = 0;
     var W = 0, H = 0, dpr = 1, sx = 1, sy = 1, ox = 0, oy = 0;
     var mouseX = -1e4, mouseY = -1e4;
     var running = true;
 
+    var sizeScale = 1;
+
     function fit() {
         var w = host.clientWidth;
-        var h = Math.round(w * 0.52);
+        var h = host.clientHeight || Math.round(w * 0.52);
         dpr = Math.min(window.devicePixelRatio || 1, 2);
         canvas.width = Math.round(w * dpr);
         canvas.height = Math.round(h * dpr);
-        canvas.style.height = h + 'px';
         W = canvas.width; H = canvas.height;
-        var m = 0.05;
-        sx = W * (1 - 2 * m) / data.w;
-        sy = H * (1 - 2 * m) / data.h;
-        var s = Math.min(sx, sy);
+        // the building fills the frame and stands on its floor
+        var s = Math.min(W * 0.94 / data.w, H * 0.85 / data.h);
         sx = sy = s;
         ox = (W - data.w * s) / 2;
-        oy = (H - data.h * s) / 2;
+        oy = H - data.h * s - H * 0.03;
+        sizeScale = Math.max(0.7, Math.min(2.2, s * 0.92));
     }
 
     function targetOf(i, si) {
@@ -83,7 +87,8 @@
             py[i] = Math.random() * H;
             var t = targetOf(i, 0);
             tx[i] = t[0]; ty[i] = t[1];
-            hue[i] = (i * 7 + ((i * 2654435761) >>> 16)) % 4;
+            var hr = ((i * 2654435761) >>> 16) % 100;
+            hue[i] = hr < 56 ? 0 : (hr < 78 ? 1 : (hr < 90 ? 2 : 3));
             size[i] = (0.9 + Math.random() * 1.4) * dpr;
             alpha[i] = 0.55 + Math.random() * 0.35;
             kspr[i] = 0.045 + Math.random() * 0.05;
@@ -91,9 +96,16 @@
             wobB[i] = 0.4 + Math.random() * 0.8;
             switchAt[i] = 0;
         }
-        setCaption(0);
+        shape = data.seq[0][0];
+        for (var i2 = 0; i2 < K; i2++) {
+            var t2 = targetOf(i2, shape);
+            tx[i2] = t2[0]; ty[i2] = t2[1];
+        }
+        setCaption(shape);
         cap.classList.remove('off');
-        phaseStart = performance.now();
+        phaseStart = stepStart = performance.now();
+        tintFrom = tintTo = TINTS[shape];
+        tintT0 = phaseStart;
 
         if (reduced) {                   // no motion: the first building, still
             for (var j = 0; j < K; j++) {
@@ -106,23 +118,33 @@
     }
 
     function scheduleMorph(now) {
-        var next = (shape + 1) % data.shapes.length;
+        seqPos = (seqPos + 1) % data.seq.length;
+        shape = data.seq[seqPos][0];
         for (var i = 0; i < K; i++) {
             switchAt[i] = now + ((i * 2654435761) >>> 8) % SPREAD;
         }
-        shape = next;
         morphing = true;
+        stepStart = now;
         cap.classList.add('off');
+        tintFrom = tintTo || tintFrom;
+        tintTo = TINTS[shape];
+        tintT0 = now;
     }
 
     function tick(now) {
         if (!running) { requestAnimationFrame(tick); return; }
         var t = now / 1000;
 
-        if (!morphing && now - phaseStart > HOLD) scheduleMorph(now);
+        if (!morphing && now - phaseStart > data.seq[seqPos][1]) scheduleMorph(now);
 
         var done = true;
         var g = data.shapes[shape].g;    // gull start index, if this is Galata
+        var slideX = 0, bobY = 0;
+        if (!data.shapes[shape].n) {     // a suitcase: it travels as it holds
+            var span = data.seq[seqPos][1] + SPREAD + 900;
+            slideX = ((now - stepStart) / span - 0.5) * W * 0.34;
+            bobY = Math.sin(t * 2.4) * H * 0.008;
+        }
         for (var i = 0; i < K; i++) {
             if (morphing && switchAt[i] && now >= switchAt[i]) {
                 var tt = targetOf(i, shape);
@@ -131,7 +153,7 @@
             }
             if (switchAt[i]) done = false;
 
-            var gx = tx[i], gy = ty[i];
+            var gx = tx[i] + slideX, gy = ty[i] + bobY;
             if (g !== undefined && i >= g) {
                 // the gull leaves the bridge: a slow loop over the water,
                 // wings beating around its own centre line
@@ -161,8 +183,10 @@
         if (morphing && done) {
             morphing = false;
             phaseStart = now;
-            setCaption(shape);
-            cap.classList.remove('off');
+            if (data.shapes[shape].n) {
+                setCaption(shape);
+                cap.classList.remove('off');
+            }
         }
 
         draw(t);
@@ -171,12 +195,31 @@
 
     function draw(t) {
         ctx.clearRect(0, 0, W, H);
+        var mixT = Math.min(1, (performance.now() - tintT0) / (SPREAD + 900));
+        var a = tintFrom, b = tintTo;
+        if (a || b) {
+            var af = a ? 1 - mixT : 0, bf = b ? mixT : 0;
+            var tot = af + bf;
+            if (tot > 0.01) {
+                var cr = ((a ? a[0] * af : 0) + (b ? b[0] * bf : 0)) / tot;
+                var cg = ((a ? a[1] * af : 0) + (b ? b[1] * bf : 0)) / tot;
+                var cb = ((a ? a[2] * af : 0) + (b ? b[2] * bf : 0)) / tot;
+                var grad = ctx.createRadialGradient(W / 2, H * 0.78, H * 0.1,
+                                                    W / 2, H * 0.78, H * 0.95);
+                grad.addColorStop(0, 'rgba(' + (cr | 0) + ',' + (cg | 0) + ',' +
+                                  (cb | 0) + ',' + (0.13 * tot).toFixed(3) + ')');
+                grad.addColorStop(1, 'rgba(' + (cr | 0) + ',' + (cg | 0) + ',' +
+                                  (cb | 0) + ',0)');
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, W, H);
+            }
+        }
         for (var c = 0; c < 4; c++) {
             ctx.fillStyle = COLORS[c] + '0.8)';
             ctx.beginPath();
             for (var i = c; i < K; i += 1) {
                 if (hue[i] !== c) continue;
-                var s = size[i];
+                var s = size[i] * sizeScale;
                 ctx.moveTo(px[i] + s, py[i]);
                 ctx.arc(px[i], py[i], s, 0, 6.2832);
             }
@@ -184,22 +227,24 @@
         }
     }
 
-    fetch('images/sculpt.json?v=1')
+    fetch('images/sculpt.json?v=2')
         .then(function (r) { return r.json(); })
         .then(function (d) {
             data = d;
             host.appendChild(canvas);
             host.appendChild(cap);
-            host.closest('.sculpt').classList.add('on');
-            begin();
+            var header = host.closest('header');
+            if (header) header.classList.add('sculpt-on');
+            // measure only after the header has taken its hero height
+            requestAnimationFrame(begin);
 
             if (reduced) return;
             window.addEventListener('resize', function () {
-                var oldW = W;
+                var oldW = W, oldH = H;
                 fit();
-                var f = W / oldW;
+                var fx = W / oldW, fy = H / oldH;
                 for (var i = 0; i < K; i++) {
-                    px[i] *= f; py[i] *= f;
+                    px[i] *= fx; py[i] *= fy;
                     var tt = targetOf(i, shape);
                     tx[i] = tt[0]; ty[i] = tt[1];
                 }
