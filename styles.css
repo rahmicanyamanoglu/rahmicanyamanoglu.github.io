@@ -966,6 +966,13 @@ footer::before {
 
     .timeline-city-label { display: none; }
 
+    .sculpt-cap {
+        right: 18px;
+        bottom: 14px;
+        max-width: 62vw;
+    }
+    .sculpt-cap b { font-size: .95rem; }
+
 }
 
 /* ============================================================
