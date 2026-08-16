@@ -1,9 +1,9 @@
 /* The entrance sculpture: thousands of points that gather out of scatter
    into the buildings he loves, hold, then drift into the next — Galata
-   Bridge (gull, strollers, fishermen), the Yeşilyurt shore with its
-   balloon garland, Bodrum Castle and its gulets, Lund Cathedral, Kärnan
-   through the gateway, the Dom with its cyclists, Collemaggio with a
-   frisbee arcing over the lawn, the Porte de Darwin.
+   Bridge (gull, strollers, fishermen), Lund Cathedral with its cyclists
+   and circling birds, Kärnan through the gateway, the Dom with its
+   cyclists, Collemaggio with a frisbee arcing over the lawn, the Porte
+   de Darwin with its skaters.
 
    No library. Each particle spring-follows its target; morphs happen by
    retargeting particles one by one over a staggered window, so the swarm
@@ -22,13 +22,13 @@
         window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     var SPREAD = 1100;        // ms over which particles peel off, one by one
-    /* ink and cobalt: charcoal majority, blue accents, pale slate depth */
-    var COLORS = ['rgba(40,42,52,', 'rgba(58,84,164,',
-                  'rgba(120,138,170,', 'rgba(24,26,34,'];
-    /* a whisper of tinted air behind each scene, all in one cool family */
-    var TINTS = [[140,160,186], [148,168,190], [136,164,182],
-                 [150,160,176], [156,166,184], [148,156,178],
-                 [186,174,166], [180,170,152], [168,158,172]];
+    /* the page's own inks: --ink majority, --accent saddle, --muted depth,
+       a rare touch of --wine — so the sculpture prints in the site's palette */
+    var COLORS = ['rgba(31,26,21,', 'rgba(139,69,19,',
+                  'rgba(122,111,100,', 'rgba(107,34,51,'];
+    /* a whisper of tinted air behind each scene, all in one warm family */
+    var TINTS = [[196,176,150], [190,178,158], [198,170,148],
+                 [192,178,156], [200,184,158], [194,172,150]];
 
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
@@ -161,8 +161,8 @@
             var A = acts[ai], kind = A[2], sp = A[3], ph = A[4], rg = A[5];
             var ox_ = 0, oy_ = 0;
             if (kind === 0) {
-                ox_ = Math.sin(t * 0.33) * W * 0.11;
-                oy_ = Math.sin(t * 0.66) * H * 0.09 - H * 0.02;
+                ox_ = Math.sin(t * 0.33 + ph) * W * 0.11;
+                oy_ = Math.sin(t * 0.66 + ph * 2) * H * 0.09 - H * 0.02;
             } else if (kind === 1) {
                 ox_ = Math.sin(t * 0.9 + ph) * W * 0.011;
                 oy_ = Math.sin(t * 1.7 + ph) * H * 0.006
@@ -267,7 +267,7 @@
         }
     }
 
-    fetch('images/sculpt.json?v=7')
+    fetch('images/sculpt.json?v=8')
         .then(function (r) { return r.json(); })
         .then(function (d) {
             data = d;
