@@ -74,11 +74,18 @@
         // the sculpture lives strictly below the name and nav: the measured
         // text bottom is the law, uncapped — the hero grew to honour it
         var topSafe = Math.max(H * 0.14, textBottom * dpr);
-        var avail = Math.max(50, H - topSafe - H * 0.04);
+        // and strictly above the caption naming the place, same law
+        var botSafe = H * 0.04;
+        var cr = cap.getBoundingClientRect();
+        if (cr.height) {
+            botSafe = Math.max(botSafe,
+                (host.getBoundingClientRect().bottom - cr.top + 12) * dpr);
+        }
+        var avail = Math.max(50, H - topSafe - botSafe);
         var s = Math.min(W * 0.97 / data.w, avail / data.h);
         sx = sy = s;
         ox = (W - data.w * s) / 2;
-        oy = H - data.h * s - H * 0.03;
+        oy = H - data.h * s - botSafe;
         sizeScale = Math.max(0.7, Math.min(2.2, s * 1.15));
     }
 
@@ -101,12 +108,14 @@
         wobA = new Float32Array(K); wobB = new Float32Array(K);
         switchAt = new Float32Array(K);
 
+        shape = data.seq[0][0];
+        setCaption(shape);          // fill the caption first: fit() measures it
         fit();
         for (var i = 0; i < K; i++) {
             // chaos: scattered over the whole stage, biased loosely centre
             px[i] = Math.random() * W;
             py[i] = Math.random() * H;
-            var t = targetOf(i, 0);
+            var t = targetOf(i, shape);
             tx[i] = t[0]; ty[i] = t[1];
             var hr = ((i * 2654435761) >>> 16) % 100;
             hue[i] = hr < 56 ? 0 : (hr < 78 ? 1 : (hr < 90 ? 2 : 3));
@@ -117,12 +126,6 @@
             wobB[i] = 0.4 + Math.random() * 0.8;
             switchAt[i] = 0;
         }
-        shape = data.seq[0][0];
-        for (var i2 = 0; i2 < K; i2++) {
-            var t2 = targetOf(i2, shape);
-            tx[i2] = t2[0]; ty[i2] = t2[1];
-        }
-        setCaption(shape);
         cap.classList.remove('off');
         phaseStart = stepStart = performance.now();
         tintFrom = tintTo = TINTS[shape];
