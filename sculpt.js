@@ -50,22 +50,31 @@
     var sizeScale = 1;
 
     function fit() {
+        // measure with CSS back in charge, so a rotation can shrink the hero
+        var header = host.closest('header');
+        if (header) header.style.minHeight = '';
+        var hc = document.querySelector('.header-content');
+        var textBottom = 0;
+        if (hc) {
+            var hr = hc.getBoundingClientRect(), sr = host.getBoundingClientRect();
+            textBottom = Math.max(0, hr.bottom - sr.top) + 16;
+        }
+        // on phones the stacked header can swallow the hero: grow the hero
+        // until the scene keeps a real strip of its own below the text
+        var minScene = Math.max(220, Math.min(400, window.innerHeight * 0.34));
+        if (header && host.clientHeight - textBottom < minScene) {
+            header.style.minHeight = Math.ceil(textBottom + minScene + 36) + 'px';
+        }
         var w = host.clientWidth;
         var h = host.clientHeight || Math.round(w * 0.52);
         dpr = Math.min(window.devicePixelRatio || 1, 2);
         canvas.width = Math.round(w * dpr);
         canvas.height = Math.round(h * dpr);
         W = canvas.width; H = canvas.height;
-        // the sculpture lives strictly below the name and nav: measure where
-        // the header text ends and fit the scene into what remains
-        var topSafe = H * 0.18;
-        var hc = document.querySelector('.header-content');
-        if (hc) {
-            var hr = hc.getBoundingClientRect(), sr = host.getBoundingClientRect();
-            topSafe = Math.max(topSafe,
-                Math.min(H * 0.55, (hr.bottom - sr.top + 18) * dpr));
-        }
-        var avail = H - topSafe - H * 0.04;
+        // the sculpture lives strictly below the name and nav: the measured
+        // text bottom is the law, uncapped — the hero grew to honour it
+        var topSafe = Math.max(H * 0.14, textBottom * dpr);
+        var avail = Math.max(50, H - topSafe - H * 0.04);
         var s = Math.min(W * 0.97 / data.w, avail / data.h);
         sx = sy = s;
         ox = (W - data.w * s) / 2;
