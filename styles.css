@@ -11,7 +11,7 @@
     --paper: #faf8f3;
     --raised: #ffffff;
     --sunk: #f4efe6;
-    --muted: #7a6f64;
+    --muted: #6f645a;
     --border: #e6dfd4;
     --hairline: #efe9df;
 
@@ -22,12 +22,34 @@
     --gold: #b8912f;
     --wine: #6b2233;
 
+    /* light-only literals, tokenised so the dark block can restate them */
+    --paper-top: #fdfcf8;          /* header gradient crown */
+    --ring: rgba(255, 255, 255, .72);  /* mat around the portrait */
+    --tint-accent: 139, 69, 19;    /* rgb triplets for low-alpha washes */
+    --tint-gold: 184, 145, 47;
+    --tint-wine: 107, 34, 51;
+    --tint-manifold: 51, 80, 95;
+    --tint-glow: 201, 160, 119;
+    --glow-crown: .16;             /* header washes, dialled down in dark */
+    --glow-foot: .05;
+    --gold-ink: #6f5427;           /* text on the gold and blue tags */
+    --manifold-ink: #33505f;
+    --shadow-rgb: 31, 26, 21;
+
+    /* the entrance sculpture reads these; sculpt.js resolves them at boot */
+    --sculpt-1: 31, 26, 21;
+    --sculpt-2: 139, 69, 19;
+    --sculpt-3: 122, 111, 100;
+    --sculpt-4: 107, 34, 51;
+
     /* elevation — deliberately light; paper, not plastic */
-    --e1: 0 1px 2px rgba(31, 26, 21, .04);
-    --e2: 0 1px 3px rgba(31, 26, 21, .05), 0 6px 16px rgba(31, 26, 21, .05);
-    --e3: 0 2px 6px rgba(31, 26, 21, .06), 0 14px 34px rgba(31, 26, 21, .09);
+    --e1: 0 1px 2px rgba(var(--shadow-rgb), .04);
+    --e2: 0 1px 3px rgba(var(--shadow-rgb), .05), 0 6px 16px rgba(var(--shadow-rgb), .05);
+    --e3: 0 2px 6px rgba(var(--shadow-rgb), .06), 0 14px 34px rgba(var(--shadow-rgb), .09);
 
     --ease: cubic-bezier(.22, .61, .36, 1);
+
+    color-scheme: light dark;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -67,7 +89,7 @@ body::after {
 }
 
 ::selection {
-    background: rgba(201, 160, 119, .3);
+    background: rgba(var(--tint-glow), .3);
     color: var(--ink);
 }
 
@@ -92,9 +114,9 @@ header::before {
     margin-left: -50vw;
     z-index: -1;
     background:
-        radial-gradient(90% 120% at 84% -10%, rgba(201, 160, 119, .16), transparent 62%),
-        radial-gradient(70% 90% at 6% 100%, rgba(139, 69, 19, .05), transparent 68%),
-        linear-gradient(180deg, #fdfcf8 0%, var(--paper) 100%);
+        radial-gradient(90% 120% at 84% -10%, rgba(var(--tint-glow), var(--glow-crown)), transparent 62%),
+        radial-gradient(70% 90% at 6% 100%, rgba(var(--tint-accent), var(--glow-foot)), transparent 68%),
+        linear-gradient(180deg, var(--paper-top) 0%, var(--paper) 100%);
     border-bottom: 1px solid var(--hairline);
 }
 
@@ -113,8 +135,8 @@ header::before {
     border: none;
     box-shadow:
         0 0 0 1px var(--border),
-        0 0 0 7px rgba(255, 255, 255, .72),
-        0 8px 26px rgba(31, 26, 21, .12);
+        0 0 0 7px var(--ring),
+        0 8px 26px rgba(var(--shadow-rgb), .12);
     transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
     transition: box-shadow .45s var(--ease), transform .2s var(--ease);
     will-change: transform;
@@ -123,8 +145,8 @@ header::before {
 .profile-photo:hover {
     box-shadow:
         0 0 0 1px var(--accent-light),
-        0 0 0 8px rgba(201, 160, 119, .14),
-        0 14px 34px rgba(31, 26, 21, .16);
+        0 0 0 8px rgba(var(--tint-glow), .14),
+        0 14px 34px rgba(var(--shadow-rgb), .16);
 }
 
 .name {
@@ -160,7 +182,7 @@ header::before {
 .affiliation a {
     color: var(--accent);
     text-decoration: none;
-    border-bottom: 1px solid rgba(139, 69, 19, .26);
+    border-bottom: 1px solid rgba(var(--tint-accent), .26);
     transition: border-color .25s var(--ease);
 }
 
@@ -322,7 +344,7 @@ h3.subsection:first-of-type { margin-top: 0; }
 .intro-text a {
     color: var(--accent);
     text-decoration: none;
-    border-bottom: 1px solid rgba(139, 69, 19, .26);
+    border-bottom: 1px solid rgba(var(--tint-accent), .26);
     transition: border-color .2s var(--ease);
 }
 
@@ -430,14 +452,14 @@ h3.subsection:first-of-type { margin-top: 0; }
 /* outlined rather than filled — quieter, more print-like */
 .pub-status {
     color: var(--accent);
-    background: rgba(139, 69, 19, .06);
-    border: 1px solid rgba(139, 69, 19, .28);
+    background: rgba(var(--tint-accent), .06);
+    border: 1px solid rgba(var(--tint-accent), .28);
 }
 
 .conf-status {
-    color: #6f5427;
-    background: rgba(184, 145, 47, .09);
-    border: 1px solid rgba(184, 145, 47, .34);
+    color: var(--gold-ink);
+    background: rgba(var(--tint-gold), .09);
+    border: 1px solid rgba(var(--tint-gold), .34);
 }
 
 /* ---- expandable abstract ------------------------------------------------
@@ -607,7 +629,7 @@ h3.subsection:first-of-type { margin-top: 0; }
 
 .timeline-item:hover::before {
     background: var(--accent);
-    box-shadow: 0 0 0 1.5px var(--accent), 0 0 0 4px rgba(139, 69, 19, .1);
+    box-shadow: 0 0 0 1.5px var(--accent), 0 0 0 4px rgba(var(--tint-accent), .1);
 }
 
 .timeline-content {
@@ -786,14 +808,14 @@ h3.subsection:first-of-type { margin-top: 0; }
 
 .pub-tag.k24 {
     color: var(--wine);
-    background: rgba(107, 34, 51, .07);
-    border: 1px solid rgba(107, 34, 51, .26);
+    background: rgba(var(--tint-wine), .07);
+    border: 1px solid rgba(var(--tint-wine), .26);
 }
 
 .pub-tag.manifold {
-    color: #33505f;
-    background: rgba(51, 80, 95, .07);
-    border: 1px solid rgba(51, 80, 95, .24);
+    color: var(--manifold-ink);
+    background: rgba(var(--tint-manifold), .07);
+    border: 1px solid rgba(var(--tint-manifold), .24);
 }
 
 .pub-date {
@@ -835,7 +857,7 @@ h3.subsection:first-of-type { margin-top: 0; }
     text-transform: uppercase;
     color: var(--accent);
     text-decoration: none;
-    border-bottom: 1px solid rgba(139, 69, 19, .28);
+    border-bottom: 1px solid rgba(var(--tint-accent), .28);
     padding-bottom: 2px;
     transition: border-color .25s var(--ease), color .25s var(--ease);
 }
@@ -990,10 +1012,32 @@ footer::before {
 }
 
 :focus-visible {
-    outline: 2px solid var(--accent-light);
+    outline: 2px solid var(--accent);
     outline-offset: 3px;
     border-radius: 2px;
 }
+
+/* ------------------------------------------------------- skip to content
+   First thing in the tab order, off-canvas until focused. Without it a
+   keyboard or screen-reader visitor walks the whole header and nav on
+   every page before reaching the text. */
+.skip-link {
+    position: absolute;
+    left: 12px;
+    top: -60px;
+    z-index: 1000;
+    padding: 10px 18px;
+    background: var(--raised);
+    color: var(--accent);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--e2);
+    font-size: .9rem;
+    text-decoration: none;
+    transition: top .2s var(--ease);
+}
+
+.skip-link:focus { top: 12px; }
 
 /* ============================================================
    Print
@@ -1008,4 +1052,67 @@ footer::before {
     section { padding: 18px 0; border-bottom: none; }
     .reveal { opacity: 1 !important; translate: none !important; }
     a { color: inherit; text-decoration: none; }
+}
+
+/* ============================================================
+   Dark
+   ------------------------------------------------------------
+   The same paper, held under a warmer, lower lamp — not a black
+   page. Only the tokens are restated; every rule above keeps
+   working unchanged. Accents lift toward amber because the light
+   brown that reads well on paper goes muddy at low luminance.
+   ============================================================ */
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --ink: #ece4d8;
+        --ink-soft: #c3b8a9;
+        --paper: #17130f;
+        --raised: #1e1a15;
+        --sunk: #120f0c;
+        --muted: #9c9185;
+        --border: #2f2820;
+        --hairline: #26201a;
+
+        --accent: #d59456;
+        --accent-2: #e0a468;
+        --accent-light: #b98a5c;
+        --gold: #d9b45e;
+        --wine: #d98a9e;
+
+        --paper-top: #1a1611;
+        --glow-crown: .07;
+        --glow-foot: .03;
+        --ring: rgba(255, 255, 255, .06);
+        --gold-ink: #d9b45e;
+        --manifold-ink: #8fb6c9;
+        --tint-wine: 217, 138, 158;
+        --tint-manifold: 143, 182, 201;
+        --tint-accent: 213, 148, 86;
+        --tint-gold: 217, 180, 94;
+        --tint-glow: 201, 160, 119;
+        --shadow-rgb: 0, 0, 0;
+
+        --sculpt-1: 236, 228, 216;
+        --sculpt-2: 213, 148, 86;
+        --sculpt-3: 156, 145, 133;
+        --sculpt-4: 217, 138, 158;
+
+        /* shadows do almost nothing on a dark ground; depth comes from the
+           raised surfaces instead, so these only deepen the seams */
+        --e1: 0 1px 2px rgba(0, 0, 0, .3);
+        --e2: 0 1px 3px rgba(0, 0, 0, .34), 0 6px 16px rgba(0, 0, 0, .3);
+        --e3: 0 2px 6px rgba(0, 0, 0, .4), 0 14px 34px rgba(0, 0, 0, .46);
+    }
+
+    /* the paper tooth is a light noise field — inverted it would frost the
+       page, so it is dialled back rather than removed */
+    body::after { opacity: .03; mix-blend-mode: overlay; }
+
+    /* photographs carry their own white point; take the edge off so they
+       do not glare out of a dim page */
+    .essay-image img,
+    .profile-photo { filter: brightness(.92) contrast(1.02); }
+
+    .timeline-city img { opacity: .86; }
 }
