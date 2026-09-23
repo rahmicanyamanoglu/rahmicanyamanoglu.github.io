@@ -23,9 +23,30 @@
 
     var SPREAD = 1100;        // ms over which particles peel off, one by one
     /* the page's own inks: --ink majority, --accent saddle, --muted depth,
-       a rare touch of --wine — so the sculpture prints in the site's palette */
-    var COLORS = ['rgba(31,26,21,', 'rgba(139,69,19,',
-                  'rgba(122,111,100,', 'rgba(107,34,51,'];
+       a rare touch of --wine — so the sculpture prints in the site's palette.
+       Read from CSS rather than fixed here, so the dark palette carries the
+       sculpture with it; the literals are the light values, used only if the
+       custom properties cannot be resolved. */
+    var COLORS = readInks();
+
+    /* CSS swaps the palette the instant the OS theme flips; re-read so the
+       sculpture does not stay in the outgoing one */
+    if (window.matchMedia) {
+        var scheme = window.matchMedia('(prefers-color-scheme: dark)');
+        var onScheme = function () { COLORS = readInks(); };
+        if (scheme.addEventListener) scheme.addEventListener('change', onScheme);
+        else if (scheme.addListener) scheme.addListener(onScheme);
+    }
+
+    function readInks() {
+        var fallback = ['31,26,21', '139,69,19', '122,111,100', '107,34,51'];
+        var css;
+        try { css = getComputedStyle(document.documentElement); } catch (e) { css = null; }
+        return fallback.map(function (lit, i) {
+            var v = css && css.getPropertyValue('--sculpt-' + (i + 1)).trim();
+            return 'rgba(' + (v || lit) + ',';
+        });
+    }
     /* a whisper of tinted air behind each scene, all in one warm family */
     var TINTS = [[196,176,150], [190,178,158], [198,170,148],
                  [192,178,156], [200,184,158], [194,172,150]];
