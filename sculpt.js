@@ -1,6 +1,7 @@
 /* The entrance sculpture: thousands of points that gather out of scatter
    into the buildings he loves, hold, then drift into the next — Galata
-   Bridge (gull, strollers, fishermen), Lund Cathedral with its cyclists
+   Bridge (gull, strollers, fishermen), the CN Tower over the lake with
+   boats working below, Lund Cathedral with its cyclists
    and circling birds, Kärnan through the gateway, the Dom with its
    cyclists, Collemaggio with a frisbee arcing over the lawn, the Porte
    de Darwin with its skaters.
@@ -47,9 +48,15 @@
             return 'rgba(' + (v || lit) + ',';
         });
     }
-    /* a whisper of tinted air behind each scene, all in one warm family */
+    /* a whisper of tinted air behind each scene, all in one warm family.
+       A scene may carry its own as "t"; this table covers the first six,
+       drawn before scenes carried one. */
     var TINTS = [[196,176,150], [190,178,158], [198,170,148],
                  [192,178,156], [200,184,158], [194,172,150]];
+
+    function tintOf(si) {
+        return data.shapes[si].t || TINTS[si] || TINTS[0];
+    }
 
     var canvas = document.createElement('canvas');
     var ctx = canvas.getContext('2d');
@@ -149,7 +156,7 @@
         }
         cap.classList.remove('off');
         phaseStart = stepStart = performance.now();
-        tintFrom = tintTo = TINTS[shape];
+        tintFrom = tintTo = tintOf(shape);
         tintT0 = phaseStart;
 
         if (reduced) {                   // no motion: the first building, still
@@ -172,7 +179,7 @@
         stepStart = now;
         cap.classList.add('off');
         tintFrom = tintTo || tintFrom;
-        tintTo = TINTS[shape];
+        tintTo = tintOf(shape);
         tintT0 = now;
     }
 
@@ -300,7 +307,7 @@
         }
     }
 
-    fetch('images/sculpt.json?v=8')
+    fetch('images/sculpt.json?v=9')
         .then(function (r) { return r.json(); })
         .then(function (d) {
             data = d;
