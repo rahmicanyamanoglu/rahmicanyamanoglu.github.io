@@ -1105,14 +1105,17 @@ footer::before {
         --e3: 0 2px 6px rgba(0, 0, 0, .4), 0 14px 34px rgba(0, 0, 0, .46);
     }
 
-    /* the paper tooth is a light noise field — inverted it would frost the
-       page, so it is dialled back rather than removed */
-    body::after { opacity: .03; mix-blend-mode: overlay; }
+    /* the paper tooth is a light noise field; on a dark ground it only
+       needs less of itself. No blend mode: this layer is fixed over the
+       whole viewport, and blending it would force the browser to recomposite
+       the entire page on every frame the sculpture draws, which slows
+       the animation wherever the GPU cannot keep up */
+    body::after { opacity: .02; }
 
     /* photographs carry their own white point; take the edge off so they
-       do not glare out of a dim page */
-    .essay-image img,
-    .profile-photo { filter: brightness(.92) contrast(1.02); }
+       do not glare out of a dim page. Not the portrait: it shares the
+       animated hero, so it stays free of per-frame work */
+    .essay-image img { filter: brightness(.92) contrast(1.02); }
 
     .timeline-city img { opacity: .86; }
 }
