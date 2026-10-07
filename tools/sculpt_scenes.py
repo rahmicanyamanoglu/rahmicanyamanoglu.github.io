@@ -260,8 +260,11 @@ def toronto(rng):
     actors = [
         (gull(400, 150, 28, rng), (0, 1.0, 0.9, 0)),
         (gull(1130, 118, 26, rng, span=58, lift=6), (0, 1.0, 3.8, 0)),
-        (sailboat(330, 570, 84, rng, scale=1.35), (2, 0.03, 1.3, 0.22)),
-        (sailboat(1150, 549, 52, rng, scale=0.95), (2, -0.022, 4.0, 0.16)),
+        # boats sail at about the pace of the cyclists elsewhere (13-19 px/s
+        # on a 1280px hero), not the walkers' 3-4 px/s, which reads as
+        # standing still; the far boat a little slower, for depth
+        (sailboat(330, 570, 84, rng, scale=1.35), (2, 0.09, 1.3, 0.22)),
+        (sailboat(1150, 549, 52, rng, scale=0.95), (2, -0.065, 4.0, 0.16)),
     ]
     n_static = K - sum(len(pts) for pts, _ in actors)
     static = scatter(sh, n_static, rng)
