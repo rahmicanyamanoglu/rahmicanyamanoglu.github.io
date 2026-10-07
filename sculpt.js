@@ -307,7 +307,7 @@
         }
     }
 
-    fetch('images/sculpt.json?v=9')
+    fetch('images/sculpt.json?v=10')
         .then(function (r) { return r.json(); })
         .then(function (d) {
             data = d;
